@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* --- PALETA DE COLORES OFICIAL POWER APPS (Fluent UI) ---
+       Primary / Purple Default: #742774
+       Primary Dark: #5C1E5C
+       Light Canvas Background: #F3F2F1
+       Border Neutral: #D2D0CE
+    -------------------------------------------------------- */
+    :root {
+      --pa-primary: #742774;
+      --pa-primary-dark: #5C1E5C;
+      --pa-primary-light: #FAEAF6;
+      --pa-bg: #F3F2F1;
+      --pa-card-bg: #FFFFFF;
+      --pa-text-main: #323130;
+      --pa-text-secondary: #605E5C;
+      --pa-border: #D2D0CE;
+      --pa-success: #107C41;
+      --pa-success-bg: #DFF6DD;
+      --pa-warning: #A80000;
+      --pa-warning-bg: #FDE7E9;
+      --pa-pending: #814E00;
+      --pa-pending-bg: #FFF4CE;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+      background: var(--pa-bg);
+      color: var(--pa-text-main);
+      transition: all 0.2s ease;
+    }
+
+    /* --- PANTALLA DE PORTADA (SPLASH SCREEN) --- */
+    .cover-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #4A144A 0%, #742774 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      transition: opacity 0.5s ease, visibility 0.5s;
+    }
+
+    .cover-card {
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 16px;
+      max-width: 580px;
+      width: 90%;
+      padding: 40px 32px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SVG del Escudo Oficial de la CRC */
+    .escudo-crc-svg {
+      width: 180px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .entidad-nombre {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #4A144A;
+      margin: 10px 0;
+      line-height: 1.2;
+    }
+
+    .entidad-sub {
+      color: var(--pa-text-secondary);
+      font-weight: 500;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-top: 1px solid var(--pa-border);
+      display: inline-block;
+      padding-top: 10px;
+      margin-top: 5px;
+    }
+
+    .descripcion-sistema {
+      font-size: 0.9rem;
+      color: var(--pa-primary);
+      margin: 24px 0;
+      background: var(--pa-primary-light);
+      padding: 10px 24px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .btn-ingresar {
+      background: var(--pa-primary);
+      border: none;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 12px 32px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.2s;
+    }
+
+    .btn-ingresar:hover {
+      background: var(--pa-primary-dark);
+    }
+
+    /* --- APLICACIÓN PRINCIPAL (ESTILO CANVAS APP) --- */
+    .main-app {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .main-app.visible {
+      display: block;
+      opacity: 1;
+    }
+
+    .powerapps-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      background: var(--pa-bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Encabezado Superior Púrpura de Power Apps */
+    .app-header {
+      background: var(--pa-primary);
+      color: white;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-logo-svg {
+      height: 40px;
+      width: auto;
+      background: white;
+      padding: 4px;
+      border-radius: 4px;
+    }
+
+    .logo-area h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .logo-area p {
+      font-size: 0.75rem;
+      opacity: 0.85;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      background: var(--pa-primary-dark);
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .user-info h4 {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .user-info span {
+      font-size: 0.75rem;
+      opacity: 0.85;
+    }
+
+    /* Layout en dos columnas */
+    .two-columns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+      flex: 1;
+    }
+
+    .form-section {
+      flex: 1.8;
+      min-width: 300px;
+    }
+
+    .approval-section {
+      flex: 1.2;
+      min-width: 300px;
+    }
+
+    .card-panel {
+      background: var(--pa-card-bg);
+      border: 1px solid var(--pa-border);
+      border-radius: 2px; /* Fluent UI usa bordes casi cuadrados */
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--pa-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--pa-border);
+      padding-bottom: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .field-group label {
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--pa-text-main);
+    }
+
+    input, select, textarea {
+      border: 1px solid var(--pa-border);
+      border-radius: 2px;
+      padding: 8px 12px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      background: #FFFFFF;
+      color: var(--pa-text-main);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--pa-primary);
+      box-shadow: 0 0 0 1px var(--pa-primary);
+    }
+
+    .attach-area {
+      border: 1px dashed var(--pa-border);
+      padding: 12px;
+      background: #FAF9F8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .file-label-btn {
+      background: #FFFFFF;
+      border: 1px solid var(--pa-border);
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .file-label-btn:hover {
+      background: #F3F2F1;
+    }
+
+    /* Botonera con estética Power Apps Studio */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-power {
+      border: 1px solid transparent;
+      padding: 8px 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 2px;
+    }
+
+    .btn-primary {
+      background: var(--pa-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--pa-primary-dark);
+    }
+
+    .btn-secondary {
+      background: #FFFFFF;
+      color: var(--pa-text-main);
+      border-color: var(--pa-border);
+    }
+
+    .btn-secondary:hover {
+      background: #F3F2F1;
+    }
+
+    .btn-danger {
+      background: #A80000;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #814E00;
+    }
+
+    /* --- REDISEÑO COMPLETO DEL HISTORIAL DE APROBACIONES (Estilo Línea de Tiempo Fluent) --- */
+    .timeline-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+      margin-top: 15px;
+    }
+
+    .timeline-card-item {
+      background: #FFFFFF;
+      border: 1px solid var(--pa-border);
+      border-left: 4px solid var(--pa-border);
+      padding: 14px;
+      margin-bottom: 12px;
+      position: relative;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border-radius: 2px;
+    }
+
+    /* Variaciones de color según el estado en la línea de tiempo */
+    .timeline-card-item.aprobado { border-left-color: var(--pa-success); }
+    .timeline-card-item.pendiente { border-left-color: #D18300; }
+    .timeline-card-item.rechazado { border-left-color: var(--pa-warning); }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .timeline-user {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--pa-text-main);
+    }
+
+    .timeline-date {
+      font-size: 0.75rem;
+      color: var(--pa-text-secondary);
+      white-space: nowrap;
+    }
+
+    .timeline-action {
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #201F1E;
+    }
+
+    .timeline-comment {
+      font-size: 0.75rem;
+      background: #F3F2F1;
+      padding: 6px 10px;
+      border-radius: 2px;
+      color: #494847;
+      font-style: italic;
+    }
+
+    .status-pill {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 2px;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+    .pill-aprobado { background: var(--pa-success-bg); color: var(--pa-success); }
+    .pill-pendiente { background: var(--pa-pending-bg); color: var(--pa-pending); }
+    .pill-rechazado { background: var(--pa-warning-bg); color: var(--pa-warning); }
+
+    .empty-history {
+      text-align: center;
+      color: var(--pa-text-secondary);
+      padding: 40px 0;
+      font-size: 0.85rem;
+    }
+
+    /* Tabla Inferior de Registros */
+    .records-list {
+      background: white;
+      border: 1px solid var(--pa-border);
+      padding: 16px;
+    }
+
+    .mini-table {
+      width: 100%;
+      font-size: 0.8rem;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .mini-table th {
+      background: #F3F2F1;
+      font-weight: 600;
+      text-align: left;
+      padding: 8px;
+      border-bottom: 2px solid var(--pa-border);
+    }
+
+    .mini-table td {
+      padding: 8px;
+      border-bottom: 1px solid var(--pa-border);
+    }
+
+    .select-record-btn {
+      background: none;
+      border: none;
+      color: var(--pa-primary);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .select-record-btn:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      background: #FFFFFF;
+      padding: 10px 24px;
+      font-size: 0.75rem;
+      color: var(--pa-text-secondary);
+      text-align: center;
+      border-top: 1px solid var(--pa-border);
+    }
+
+    @media (max-width: 850px) {
+      .two-columns { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cover-screen" id="coverScreen">
+  <div class="cover-card">
+    <div class="escudo-container">
+    </div>
+    <div class="entidad-nombre">Comisión de Regulación de Comunicaciones</div>
+    <div class="entidad-sub">República de Colombia</div>
+    
+    <div>
+      <div class="descripcion-sistema">
+        <i class="fas fa-network-wired"></i> Gestión de Ausentismos
+      </div>
+    </div>
+    
+    <button class="btn-ingresar" id="btnIngresarApp">
+      Ingresar <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+
+<div class="main-app" id="mainApp">
+  <div class="powerapps-container">
+    
+    <div class="app-header">
+      <div class="logo-area">
+        <svg class="header-logo-svg" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+          <text x="10" y="50" font-family="sans-serif" font-size="42" font-weight="900" fill="#742774">CRC</text>
+        </svg>
+        <div>
+          <h1>Gestión de Ausentismos y Permisos</h1>
+          <p>Comisión de Regulación de Comunicaciones</p>
+        </div>
+      </div>
+      <div class="user-profile">
+        <div class="avatar">CRC</div>
+        <div class="user-info">
+          <h4>Talento Humano</h4>
+          <span>Rol Administrador</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-columns">
+      
+      <div class="form-section">
+        <div class="card-panel">
+          <div class="section-title">
+            <i class="fas fa-edit"></i> Formulario de Novedades de Personal
+          </div>
+          
+          <div class="form-grid">
+            <div class="field-group">
+              <label>Funcionario:</label>
+              <input type="text" id="empleadoNombre" value="Juan Carlos Gómez">
+            </div>
+            
+            <div class="field-group">
+              <label>Fecha de Inicio</label>
+              <input type="date" id="fechaInicio" value="2026-06-15">
+            </div>
+            
+            <div class="field-group">
+              <label>Fecha de Finalización</label>
+              <input type="date" id="fechaFin" value="2026-06-18">
+            </div>
+            
+            <div class="field-group">
+              <label>Tipo de Ausencia</label>
+              <select id="tipoAusencia">
+              <option value="Enfermedad">Enfermedad general</option>
+			   <option value="Accidente laboral">Enfermedad laboral</option>
+              <option value="Accidente laboral">Accidente laboral</option>
+              <option value="Licencia médica">Licencia por maternidad</option>
+			  <option value="Licencia médica">Licencia por paternidad</option>
+              <option value="Permiso personal">Permiso personal - media jornada</option>
+			  <option value="Permiso personal">Permiso personal - jornada completa</option>
+			  <option value="Permiso personal">Calamidad domestica</option>
+              <option value="Familiar fallecimiento">Licencia por luto</option>
+              </select>
+            </div>
+            
+            <div class="field-group">
+              <label>Estado del Trámite</label>
+              <select id="estadoSolicitud">
+                <option value="Pendiente">Pendiente de Revisión</option>
+                <option value="Aprobado">Validado / Aprobado</option>
+                <option value="Rechazado">Rechazado / Con Observación</option>
+              </select>
+            </div>
+            
+            <div class="field-group full-width">
+              <label>Justificación del Ausentismo / Acto Administrativo de Soporte</label>
+              <textarea id="comentarios" placeholder="Citar radicado de incapacidad o motivos explícitos..."></textarea>
+            </div>
+            
+            <div class="field-group full-width">
+              <label>Soportes de Evidencia (PDF, Imágenes)</label>
+              <div class="attach-area">
+                <label class="file-label-btn" for="fileInput"><i class="fas fa-paperclip"></i> Cargar Evidencia</label>
+                <input type="file" id="fileInput" style="display: none;">
+                <span class="file-name" id="fileNameDisplay">No se han cargado documentos oficiales</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn-power btn-primary" id="btnGuardarRegistro">
+              <i class="fas fa-save"></i> Guardar en Base de Datos
+            </button>
+            <button class="btn-power btn-secondary" id="btnSeleccionarRegistro">
+              <i class="fas fa-folder-open"></i> Traer Primer Registro
+            </button>
+            <button class="btn-power btn-danger" id="btnSalirApp" style="margin-left: auto;">
+              <i class="fas fa-sign-out-alt"></i> Salir de la Aplicación
+            </button>
+          </div>
+        </div>
+
+        <div class="records-list">
+          <div class="section-title" style="border: none; margin-bottom: 5px;">
+            <i class="fas fa-server"></i> Repositorio de Novedades Guardadas
+          </div>
+          <table class="mini-table" id="tablaRegistros">
+            <thead>
+              <tr>
+                <th>Funcionario</th>
+                <th>Inicio</th>
+                <th>Novedad</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="recordsTbody">
+              <tr><td colspan="5" style="text-align:center;">Cargando registros del sistema...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="approval-section">
+        <div class="card-panel" style="height: 100%;">
+          <div class="section-title">
+            <i class="fas fa-stream"></i> Flujo de Aprobación
+          </div>
+          <div id="historyTimeline" class="timeline-container">
+            <div class="empty-history">Seleccione o guarde un registro para consultar el flujo de firmas.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>
+      Plataforma Interna de Ausentismo - Comisión de Regulación de Comunicaciones (CRC)
+    </footer>
+  </div>
+</div>
+
+<script>
+  // Transiciones de pantallas
+  const coverScreen = document.getElementById('coverScreen');
+  const mainApp = document.getElementById('mainApp');
+  const btnIngresar = document.getElementById('btnIngresarApp');
+  const btnSalirApp = document.getElementById('btnSalirApp');
+
+  btnIngresar.addEventListener('click', () => {
+    coverScreen.style.opacity = '0';
+    coverScreen.style.visibility = 'hidden';
+    mainApp.classList.add('visible');
+  });
+
+  // Funcionalidad del nuevo botón Salir: Devuelve al usuario a la pantalla de bienvenida institucional
+  btnSalirApp.addEventListener('click', () => {
+    if(confirm("¿Desea cerrar la sesión actual del panel de ausentismos de la CRC?")) {
+      mainApp.classList.remove('visible');
+      coverScreen.style.display = 'flex';
+      setTimeout(() => {
+        coverScreen.style.opacity = '1';
+        coverScreen.style.visibility = 'visible';
+      }, 50);
+    }
+  });
+
+  // Estructura de Datos Simulada
+  let registros = [];
+  const evaluadorPorDefecto = "Coordinación de Talento Humano CRC";
+
+  function generarId() { return 'CRC-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase(); }
+
+  // Rediseño visual del renderizado de la línea de tiempo
+  function renderizarHistorial(registroId) {
+    const reg = registros.find(r => r.id == registroId);
+    const historyDiv = document.getElementById("historyTimeline");
+    
+    if (!reg || !reg.historialAprobaciones || reg.historialAprobaciones.length === 0) {
+      historyDiv.innerHTML = `<div class="empty-history"><i class="fas fa-info-circle"></i> Sin transiciones en este registro.</div>`;
+      return;
+    }
+
+    let html = "";
+    reg.historialAprobaciones.forEach(ev => {
+      let estadoClase = ev.estado.toLowerCase().includes('aprob') ? 'aprobado' : 
+                        (ev.estado.toLowerCase().includes('rechaz') ? 'rechazado' : 'pendiente');
+      let badgeClase = ev.estado.toLowerCase().includes('aprob') ? 'pill-aprobado' : 
+                       (ev.estado.toLowerCase().includes('rechaz') ? 'pill-rechazado' : 'pill-pendiente');
+
+      html += `
+        <div class="timeline-card-item ${estadoClase}">
+          <div class="timeline-header">
+            <span class="timeline-user"><i class="far fa-user"></i> ${escapeHtml(ev.responsable)}</span>
+            <span class="timeline-date"><i class="far fa-clock"></i> ${ev.fecha}</span>
+          </div>
+          <div class="timeline-action">
+            <span class="status-pill ${badgeClase}">${ev.estado}</span>
+          </div>
+          <div style="font-size:0.8rem; font-weight:600; margin-bottom: 4px; color:#323130;">${ev.accion}</div>
+          <div class="timeline-comment">
+            <i class="far fa-comment-alt"></i> ${escapeHtml(ev.comentarioExtra)}
+          </div>
+        </div>
+      `;
+    });
+    historyDiv.innerHTML = html;
+  }
+
+  function guardarRegistro(registroExistenteId = null) {
+    const empleado = document.getElementById("empleadoNombre").value.trim();
+    if (!empleado) { alert("Debe ingresar un nombre de funcionario."); return false; }
+    
+    const fechaInicio = document.getElementById("fechaInicio").value;
+    const fechaFin = document.getElementById("fechaFin").value;
+    const tipoAusencia = document.getElementById("tipoAusencia").value;
+    let estado = document.getElementById("estadoSolicitud").value;
+    const comentarios = document.getElementById("comentarios").value || "Sin observaciones adicionales";
+    
+    const fileInput = document.getElementById("fileInput");
+    let anexoNombre = fileInput.files.length > 0 ? fileInput.files[0].name : "Sin soporte digital adjunto";
+
+    if (registroExistenteId) {
+      const idx = registros.findIndex(r => r.id == registroExistenteId);
+      if (idx !== -1) {
+        const oldEstado = registros[idx].estado;
+        registros[idx].empleado = empleado;
+        registros[idx].fechaInicio = fechaInicio;
+        registros[idx].fechaFin = fechaFin;
+        registros[idx].tipoAusencia = tipoAusencia;
+        registros[idx].comentarios = comentarios;
+        
+        if(oldEstado !== estado) {
+          registros[idx].historialAprobaciones.unshift({
+            fecha: new Date().toLocaleString(),
+            accion: `Modificación de Estado del Trámite`,
+            responsable: evaluadorPorDefecto,
+            estado: estado,
+            comentarioExtra: comentarios
+          });
+        } else {
+          registros[idx].historialAprobaciones.unshift({
+            fecha: new Date().toLocaleString(),
+            accion: `Metadatos actualizados por el área encargada`,
+            responsable: evaluadorPorDefecto,
+            estado: estado,
+            comentarioExtra: "Se ejecutaron correcciones tipográficas o de fechas en el formulario."
+          });
+        }
+        registros[idx].estado = estado;
+        alert("Novedad institucional actualizada con éxito.");
+      }
+    } else {
+      const nuevoId = generarId();
+      const nuevoReg = {
+        id: nuevoId, empleado, fechaInicio, fechaFin, tipoAusencia, estado, comentarios, anexoNombre,
+        historialAprobaciones: [
+          {
+            fecha: new Date().toLocaleString(),
+            accion: `Radicación de solicitud en el sistema de Talento Humano`,
+            responsable: empleado,
+            estado: 'Pendiente',
+            comentarioExtra: `Crea la novedad tipo: ${tipoAusencia}`
+          }
+        ]
+      };
+      if (estado !== "Pendiente") {
+        nuevoReg.historialAprobaciones.unshift({
+          fecha: new Date().toLocaleString(),
+          accion: `Resolución inmediata de la novedad`,
+          responsable: evaluadorPorDefecto,
+          estado: estado,
+          comentarioExtra: comentarios
+        });
+      }
+      registros.push(nuevoReg);
+      activeEditingId = nuevoId;
+      alert("Nueva novedad de personal guardada en el sistema.");
+    }
+    
+    renderizarListadoRegistros();
+    renderizarHistorial(activeEditingId);
+    return true;
+  }
+
+  function cargarRegistroEnFormulario(id) {
+    const reg = registros.find(r => r.id == id);
+    if (!reg) return;
+    activeEditingId = reg.id;
+    document.getElementById("empleadoNombre").value = reg.empleado;
+    document.getElementById("fechaInicio").value = reg.fechaInicio;
+    document.getElementById("fechaFin").value = reg.fechaFin;
+    document.getElementById("tipoAusencia").value = reg.tipoAusencia;
+    document.getElementById("estadoSolicitud").value = reg.estado;
+    document.getElementById("comentarios").value = reg.comentarios;
+    document.getElementById("fileNameDisplay").innerText = reg.anexoNombre;
+    renderizarHistorial(id);
+  }
+
+  function renderizarListadoRegistros() {
+    const tbody = document.getElementById("recordsTbody");
+    if (!registros.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No existen novedades indexadas en la base de datos local.</td></tr>';
+      return;
+    }
+    let html = "";
+    registros.forEach(reg => {
+      let badgeClase = reg.estado === 'Aprobado' ? 'pill-aprobado' : (reg.estado === 'Rechazado' ? 'pill-rechazado' : 'pill-pendiente');
+      html += `<tr>
+        <td><strong>${escapeHtml(reg.empleado)}</strong></td>
+        <td>${reg.fechaInicio}</td>
+        <td>${reg.tipoAusencia}</td>
+        <td><span class="status-pill ${badgeClase}">${reg.estado}</span></td>
+        <td><button class="select-record-btn" onclick="cargarRegistroEnFormulario('${reg.id}')"><i class="fas fa-eye"></i> Abrir</button></td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+
+  let activeEditingId = null;
+  document.getElementById("btnGuardarRegistro").addEventListener("click", () => guardarRegistro(activeEditingId));
+  document.getElementById("btnSeleccionarRegistro").addEventListener("click", () => {
+    if(registros.length > 0) {
+      cargarRegistroEnFormulario(registros[0].id);
+    } else {
+      alert("No existen registros en el repositorio para cargar.");
+    }
+  });
+
+  document.getElementById("fileInput").addEventListener("change", function(e) {
+    document.getElementById("fileNameDisplay").innerText = e.target.files[0] ? e.target.files[0].name : "No se han cargado documentos oficiales";
+  });
+
+  function escapeHtml(str) { 
+    if(!str) return ''; 
+    return str.replace(/[&<>]/g, function(m){ 
+      if(m==='&') return '&amp;'; 
+      if(m==='<') return '&lt;'; 
+      if(m==='>') return '&gt;'; 
+      return m;
+    }); 
+  }
+
+  // Carga inicial de datos institucionales simulados (CRC)
+  function inicializarCasosDemo() {
+    const id1 = generarId();
+    registros.push({
+      id: id1, empleado: "Amparo Leguízamo", fechaInicio: "2026-06-10", fechaFin: "2026-06-12",
+      tipoAusencia: "Permiso personal - jornada completa", estado: "Aprobado", comentarios: "Sustenta participación en el foro regulatorio internacional.", anexoNombre: "agenda_evento_oficial.pdf",
+      historialAprobaciones: [
+        { fecha: "2026-06-09 08:30", accion: "Aprobación y firma digital de la resolución", responsable: "Coordinación de Talento Humano CRC", estado: "Aprobado", comentarioExtra: "Viabilizado. Cumple con los requisitos normativos del manual de funciones." },
+        { fecha: "2026-06-08 14:15", accion: "Radicación de solicitud de comisión", responsable: "Amparo Leguízamo", estado: "Pendiente", comentarioExtra: "Se adjunta memorando de invitación de la entidad homóloga." }
+      ]
+    });
+
+    const id2 = generarId();
+    registros.push({
+      id: id2, empleado: "Carlos Mario Restrepo", fechaInicio: "2026-06-20", fechaFin: "2026-06-24",
+      tipoAusencia: "Calamidad Doméstica", estado: "Pendiente", comentarios: "Asunto de fuerza mayor familiar en trámite de validación.", anexoNombre: "Sin soporte digital adjunto",
+      historialAprobaciones: [
+        { fecha: "2026-06-09 09:12", accion: "Creación automática del radicado interno de personal", responsable: "Dr. Carlos Mario Restrepo", estado: "Pendiente", comentarioExtra: "Pendiente por anexar los soportes requeridos por el reglamento interno." }
+      ]
+    });
+
+    renderizarListadoRegistros();
+    cargarRegistroEnFormulario(id1);
+  }
+
+  // Inicializar al cargar el documento
+  inicializarCasosDemo();
+</script>
+</body>
+</html>

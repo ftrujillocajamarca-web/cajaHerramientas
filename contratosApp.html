@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Power Apps Canvas | Gestión de Certificaciones de Contratos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        /* --- PALETA DE COLORES OFICIAL POWER APPS (CANVAS DESIGN) ---
+           Primary / Fill: #742774 (Deep Purple Power Apps)
+           Selected / Hover: #EEDFEF (Light Purple Selection)
+           Background: #F3F2F1 (Fluent Light Gray)
+        ------------------------------------------------------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #EAEAEA;
+            color: #323130;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        /* Simulación del lienzo contenedor de una Canvas App (Aspect Ratio Estructurado) */
+        .canvas-app-window {
+            width: 100%;
+            max-width: 1440px;
+            height: 850px;
+            background: #F3F2F1;
+            border: 2px solid #843C84;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- PANTALLA DE INICIO (SPLASH SCREEN) --- */
+        .canvas-screen-welcome {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #742774;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .canvas-welcome-container {
+            background: #FFFFFF;
+            width: 500px;
+            padding: 40px;
+            border-radius: 2px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            border-top: 10px solid #843C84;
+            text-align: center;
+        }
+
+        .powerapps-icon-header {
+            font-size: 3.5rem;
+            color: #742774;
+            margin-bottom: 15px;
+        }
+
+        .app-title-welcome {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #242424;
+            margin-bottom: 5px;
+        }
+
+        .app-subtitle-welcome {
+            font-size: 0.95rem;
+            color: #605E5C;
+            margin-bottom: 30px;
+        }
+
+        /* Botón Estilo Control Clásico de Power Apps */
+        .powerapps-btn {
+            background-color: #742774;
+            color: #FFFFFF;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 10px 28px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .powerapps-btn:hover { background-color: #5C1E5C; }
+        .powerapps-btn:active { background-color: #4A184A; }
+
+        /* --- DASHBOARD PRINCIPAL --- */
+        .canvas-header-bar {
+            height: 55px;
+            background-color: #742774;
+            color: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        .canvas-header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .canvas-user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .canvas-avatar {
+            width: 35px;
+            height: 35px;
+            background: #FFFFFF;
+            color: #742774;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* Área de Trabajo de la Canvas App */
+        .canvas-main-workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            height: calc(100% - 55px);
+            background: #F3F2F1;
+        }
+
+        /* CONTROL GALERÍA (Sidebar Izquierdo) */
+        .canvas-sidebar-gallery {
+            background: #FFFFFF;
+            border-right: 1px solid #EDEBE9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .canvas-search-box {
+            padding: 15px;
+            border-bottom: 1px solid #EDEBE9;
+            background: #FAF9F8;
+        }
+
+        .canvas-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .canvas-input, .canvas-select {
+            width: 100%;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            border: 1px solid #A19F9D;
+            background: #FFFFFF;
+            margin-bottom: 10px;
+            outline: none;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .canvas-input:focus, .canvas-select:focus {
+            border-color: #742774;
+            box-shadow: 0 0 0 1px #742774;
+        }
+
+        .powerapps-gallery {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Elemento de la Galería */
+        .gallery-item {
+            padding: 15px;
+            border-bottom: 1px solid #F3F2F1;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        .gallery-item:hover { background-color: #F3F2F1; }
+        
+        .gallery-item.selected {
+            background-color: #EEDFEF;
+            border-left: 4px solid #742774;
+        }
+
+        .gallery-title { font-size: 0.9rem; font-weight: 600; color: #201F1E; }
+        .gallery-subtitle { font-size: 0.8rem; color: #605E5C; margin-top: 2px; }
+        .gallery-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 0.75rem; }
+        
+        .gallery-tag { padding: 2px 8px; border-radius: 2px; font-weight: 600; }
+        .tag-activo { background: #DFF6DD; color: #107C41; }
+        .tag-parcial { background: #FFF4CE; color: #794300; }
+
+        /* PANEL DE DETALLE (Sección Derecha) */
+        .canvas-detail-view {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Tarjeta de Formulario */
+        .powerapps-form-viewer {
+            background: #FFFFFF;
+            border: 1px solid #EDEBE9;
+            padding: 20px;
+        }
+
+        .form-viewer-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #742774;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #742774;
+            padding-bottom: 5px;
+        }
+
+        .powerapps-grid-fields {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .datacard-field {
+            background: #FAF9F8;
+            padding: 8px 12px;
+            border-bottom: 1px solid #D2D0CE;
+        }
+
+        .datacard-value { font-size: 0.85rem; color: #201F1E; font-weight: 600; margin-top: 2px; }
+
+        .canvas-split-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .powerapps-card-container {
+            background: #FFFFFF;
+            border: 1px solid #EDEBE9;
+            padding: 15px;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-container-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 10px;
+        }
+
+        .card-scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            font-size: 0.8rem;
+        }
+
+        .obligation-item {
+            padding: 6px;
+            background: #F3F2F1;
+            margin-bottom: 5px;
+            border-left: 3px solid #843C84;
+        }
+
+        .history-item {
+            padding: 6px;
+            border-bottom: 1px solid #EDEBE9;
+            background: #FAF9F8;
+            margin-bottom: 4px;
+        }
+
+        /* Sección PDF */
+        .powerapps-pdf-section {
+            background: #FFFFFF;
+            border: 1px solid #EDEBE9;
+            padding: 15px;
+        }
+
+        .pdf-frame-container {
+            width: 100%;
+            height: 400px;
+            background: #A19F9D;
+            border: 1px solid #D2D0CE;
+            margin-top: 10px;
+        }
+
+        .pdf-embed { width: 100%; height: 100%; border: none; }
+        .canvas-action-bar { display: flex; gap: 12px; margin-top: 5px; }
+
+        .powerapps-btn-secondary { background-color: #FFFFFF; color: #742774; border: 1px solid #742774; }
+        .powerapps-btn-secondary:hover { background-color: #F3F2F1; }
+        .powerapps-btn-success { background-color: #107C41; }
+        .powerapps-btn-success:hover { background-color: #0B5931; }
+
+        .empty-state-msg { text-align: center; padding: 60px; color: #605E5C; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+
+<div class="canvas-app-window">
+
+    <div class="canvas-screen-welcome" id="coverScreen">
+        <div class="canvas-welcome-container">
+            <div class="powerapps-icon-header"><i class="fas fa-window-restore"></i></div>
+            <div class="app-title-welcome">Gestión de Certificaciones</div>
+            <div class="app-subtitle-welcome">Comisión de Regulación de Comunicaciones - Coordinación Ejecutiva</div>
+            <button class="powerapps-btn" id="btnIngresarApp">
+                Ejecutar Aplicación <i class="fas fa-chevron-right" style="margin-left: 8px;"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="canvas-header-bar">
+        <div class="canvas-header-title">
+            <i class="fas fa-wallet"></i>
+            <span>Contratos Canvas App</span>
+        </div>
+        <div class="canvas-user-badge">
+            <div style="text-align: right;">
+                <div style="font-weight: 600;">Zoila Vargas</div>
+                <div style="font-size: 0.7rem; color: #EEDFEF;">Coordinador Ejecutivo</div>
+            </div>
+            <div class="canvas-avatar">ZV</div>
+        </div>
+    </div>
+
+    <div class="canvas-main-workspace" id="mainApp" style="display: none;">
+        
+        <div class="canvas-sidebar-gallery">
+            <div class="canvas-search-box">
+                <div style="font-weight: 600; font-size: 0.85rem; color: #742774; margin-bottom: 12px;">
+                    <i class="fas fa-filter"></i> Filtros de la Galería
+                </div>
+                
+                <label class="canvas-label">Identificación Contratista</label>
+                <input type="text" id="searchIdentificacion" class="canvas-input" placeholder="Filtrar por ID...">
+
+                <label class="canvas-label">Número de Contrato</label>
+                <input type="text" id="searchNumero" class="canvas-input" placeholder="Ej: CTO-2025-001">
+
+                <label class="canvas-label">Procedimiento de Selección</label>
+                <select id="searchProceso" class="canvas-select">
+                    <option value="">[Todos los procesos]</option>
+                    <option value="Licitación Pública">Licitación Pública</option>
+                    <option value="Selección Abreviada">Selección Abreviada</option>
+                    <option value="Mínima Cuantía">Mínima Cuantía</option>
+                    <option value="Contratación Directa">Contratación Directa</option>
+                </select>
+            </div>
+
+            <div class="powerapps-gallery" id="contractsGallery">
+                </div>
+        </div>
+
+        <div class="canvas-detail-view" id="detailPanel">
+            <div id="detalleContenido">
+                <div class="empty-state-msg">
+                    Seleccione un elemento de la galería izquierda para inspeccionar sus datos.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Origen de Datos Base de la Aplicación (Colección interna tipo SharePoint / Dataverse)
+    const contratosBase = [
+        {
+            id: 1, numeroContrato: "CTO-2025-001", contratista: "Ingeniería y Construcciones SAS", identificacion: "901234567",
+            objetoPrincipal: "Mantenimiento de infraestructura vial tramo norte", fechaInicio: "2025-01-15", fechaFin: "2025-07-15",
+            valorContrato: "$ 245,800,000", supervisor: "Jaime González", proceso: "Licitación Pública",
+            obligacionesContratista: "Ejecutar obra conforme a especificaciones técnicas.\nPresentar informes quincenales.\nCumplir normas de seguridad y salud.",
+            obligacionesContrante: "Realizar pagos oportunos según programación.\nSuministrar supervisión técnica.",
+            estado: "Activo", certificaciones: [{ fecha: "2025-02-10", tipo: "Parcial", monto: "$40,000,000", observaciones: "Avance obra 20%" }]
+        },
+        {
+            id: 2, numeroContrato: "CTO-2025-012", contratista: "Consultores Asociados Ltda", identificacion: "876543219",
+            objetoPrincipal: "Consultoría para actualización normativa interna", fechaInicio: "2025-02-01", fechaFin: "2025-06-30",
+            valorContrato: "$ 98,500,000", supervisor: "María Fernanda Ríos", proceso: "Selección Abreviada",
+            obligacionesContratista: "Entregar diagnóstico en 30 días.\nRealizar mesas de trabajo.",
+            obligacionesContrante: "Facilitar documentación interna.\nRevisar entregables en 15 días.",
+            estado: "Activo", certificaciones: [{ fecha: "2025-03-01", tipo: "Inicial", monto: "$25,000,000", observaciones: "Avance diagnóstico" }]
+        },
+        {
+            id: 3, numeroContrato: "CTO-2024-089", contratista: "Tecnología Soft", identificacion: "112233445",
+            objetoPrincipal: "Desarrollo de software para gestión documental", fechaInicio: "2024-10-10", fechaFin: "2025-04-10",
+            valorContrato: "$ 320,000,000", supervisor: "César Villamizar", proceso: "Contratación Directa",
+            obligacionesContratista: "Entregar código fuente.\nCapacitar a usuarios.",
+            obligacionesContrante: "Proveer infraestructura de servidores.\nDesignar equipo de pruebas.",
+            estado: "Certificado Parcial", certificaciones: [{ fecha: "2024-12-05", tipo: "Parcial", monto: "$120,000,000", observaciones: "Módulo 1" }]
+        }
+    ];
+
+    let datasetApp = [...contratosBase];
+    let contratoSeleccionadoId = null;
+
+    // Función Central Fija para Generar Blobs de PDF dinámicamente usando el espacio de nombres de la v2.x de jsPDF
+    function generarPDFBlob(contrato) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        
+        // Encabezado institucional simulado
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(15);
+        doc.setTextColor(116, 39, 116); // Color Power Apps institucional
+        doc.text("CERTIFICACIÓN DE GESTIÓN CONTRACTUAL", 105, 20, { align: 'center' });
+        
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(50, 50, 50);
+        doc.text(`Código Único de Registro: ${contrato.numeroContrato}`, 20, 32);
+        doc.text(`Fecha de Emisión del Reporte: ${new Date().toLocaleDateString()}`, 130, 32);
+        
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(116, 39, 116);
+        doc.line(20, 36, 190, 36);
+
+        // Bloque de datos
+        doc.setFont("Helvetica", "bold"); doc.text("Resumen Contractual:", 20, 45);
+        doc.setFont("Helvetica", "normal");
+        doc.text(`• Razón Social del Contratista: ${contrato.contratista}`, 20, 53);
+        doc.text(`• Identificación NIT / Cédula: ${contrato.identificacion}`, 20, 60);
+        doc.text(`• Objeto del Acuerdo: ${contrato.objetoPrincipal}`, 20, 67);
+        doc.text(`• Modalidad del Proceso: ${contrato.proceso}`, 20, 74);
+        doc.text(`• Cuantía Adjudicada: ${contrato.valorContrato}`, 20, 81);
+        doc.text(`• Servidor Público Supervisor: ${contrato.supervisor}`, 20, 88);
+        doc.text(`• Vigencia: Desde ${contrato.fechaInicio} hasta ${contrato.fechaFin}`, 20, 95);
+        doc.text(`• Estado en Sistema: ${contrato.estado}`, 20, 102);
+
+        // Sección de Historiales
+        doc.setFont("Helvetica", "bold"); doc.text("Histórico de Pagos y Certificaciones Avanzadas:", 20, 115);
+        doc.setFont("Helvetica", "normal");
+        
+        let renglonY = 123;
+        if(contrato.certificaciones.length === 0) {
+            doc.text("Ningún abono parcial ha sido radicado bajo este contrato.", 25, renglonY);
+        } else {
+            contrato.certificaciones.forEach((c, index) => {
+                doc.text(`${index + 1}. Corte Técnico: ${c.fecha} | Tipo: ${c.tipo} | Desembolso: ${c.monto} (${c.observaciones})`, 25, renglonY);
+                renglonY += 7;
+            });
+        }
+
+        // Pie de Firma formalizado
+        doc.line(20, 240, 190, 240);
+        doc.setFont("Helvetica", "bold");
+        doc.text("Validado por Oficina de Contratación Electrónica", 105, 248, { align: 'center' });
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(8);
+        doc.text("Sincronizado nativamente vía Microsoft Power Platform Data Connector.", 105, 253, { align: 'center' });
+
+        return doc.output('blob');
+    }
+
+    // Actualiza la URL temporal del Blob del Contrato para evitar fugas de memoria
+    function refrescarURLPdfContrato(contrato) {
+        if (contrato.cachedUrl) {
+            URL.revokeObjectURL(contrato.cachedUrl);
+        }
+        const blob = generarPDFBlob(contrato);
+        contrato.cachedUrl = URL.createObjectURL(blob);
+    }
+
+    // Inicializa la App cargando de forma síncrona los blobs iniciales sin romper los listeners del DOM
+    function inicializarEstructuraUrls() {
+        datasetApp.forEach(c => {
+            refrescarURLPdfContrato(c);
+        });
+    }
+
+    // Renderiza los registros en la Galería Lateral (Simulación de un Vertical Gallery Control)
+    function construirGaleriaComponente(listaContratos) {
+        const contenedor = document.getElementById("contractsGallery");
+        if(listaContratos.length === 0) {
+            contenedor.innerHTML = `<div style="text-align:center; padding:30px; font-size:0.8rem; color:#605E5C;">[No hay registros coincidentes]</div>`;
+            return;
+        }
+
+        let fragmentoHtml = "";
+        listaContratos.forEach(c => {
+            const cssClaseSeleccionado = (c.id === contratoSeleccionadoId) ? "selected" : "";
+            const cssClaseTag = (c.estado === "Activo") ? "tag-activo" : "tag-parcial";
+
+            fragmentoHtml += `
+                <div class="gallery-item ${cssClaseSeleccionado}" onclick="comandoSeleccionarPorId(${c.id})">
+                    <div class="gallery-title">${c.numeroContrato}</div>
+                    <div class="gallery-subtitle">${c.contratista}</div>
+                    <div class="gallery-meta">
+                        <span style="color:#742774; font-weight:600;">${c.valorContrato}</span>
+                        <span class="gallery-tag ${cssClaseTag}">${c.estado}</span>
+                    </div>
+                </div>
+            `;
+        });
+        contenedor.innerHTML = fragmentoHtml;
+    }
+
+    // Función disparada por los eventos de escritura ("input" y "change") que aplica filtros relacionales
+    function delegacionFiltrarYBuscar() {
+        const filtroId = document.getElementById("searchIdentificacion").value.trim().toLowerCase();
+        const filtroNumero = document.getElementById("searchNumero").value.trim().toLowerCase();
+        const filtroProceso = document.getElementById("searchProceso").value;
+
+        const resultadoFiltro = datasetApp.filter(c => {
+            const cumpleId = !filtroId || c.identificacion.toLowerCase().includes(filtroId);
+            const cumpleNumero = !filtroNumero || c.numeroContrato.toLowerCase().includes(filtroNumero);
+            const cumpleProceso = !filtroProceso || c.proceso === filtroProceso;
+            return cumpleId && cumpleNumero && cumpleProceso;
+        });
+
+        construirGaleriaComponente(resultadoFiltro);
+
+        // Si el contrato previamente seleccionado ya no está en la búsqueda, limpiar o reasignar
+        if(resultadoFiltro.length > 0) {
+            const sigoVisible = resultadoFiltro.some(x => x.id === contratoSeleccionadoId);
+            if(!sigoVisible) {
+                comandoSeleccionarPorId(resultadoFiltro[0].id);
+            }
+        } else {
+            document.getElementById("detalleContenido").innerHTML = `<div class="empty-state-msg">Ningún contrato cumple los criterios de búsqueda actuales.</div>`;
+        }
+    }
+
+    // Acción OnSelect de la Galería
+    function comandoSeleccionarPorId(id) {
+        contratoSeleccionadoId = id;
+        
+        // Sincronizar clases visuales de selección en los nodos del DOM
+        const items = document.querySelectorAll(".gallery-item");
+        // Re-renderizado rápido para mantener consistencia de selección
+        const filtroId = document.getElementById("searchIdentificacion").value.trim().toLowerCase();
+        const filtroNumero = document.getElementById("searchNumero").value.trim().toLowerCase();
+        const filtroProceso = document.getElementById("searchProceso").value;
+        const subLista = datasetApp.filter(c => {
+            return (!filtroId || c.identificacion.toLowerCase().includes(filtroId)) &&
+                   (!filtroNumero || c.numeroContrato.toLowerCase().includes(filtroNumero)) &&
+                   (!filtroProceso || c.proceso === filtroProceso);
+        });
+        construirGaleriaComponente(subLista);
+
+        const contrato = datasetApp.find(x => x.id === id);
+        if(contrato) {
+            desplegarFormViewer(contrato);
+        }
+    }
+
+    // Despliega el registro seleccionado dentro del FormViewer y PDFViewer
+    function desplegarFormViewer(contrato) {
+        const panelContenedor = document.getElementById("detalleContenido");
+
+        const listaObligacionesContratista = contrato.obligacionesContratista.split('\n').map(o => `<div class="obligation-item"><strong>Contratista:</strong> ${o}</div>`).join('');
+        const listaObligacionesEntidad = contrato.obligacionesContrante.split('\n').map(o => `<div class="obligation-item" style="border-left-color: #a19f9d;"><strong>Entidad:</strong> ${o}</div>`).join('');
+
+        const listaCertificaciones = contrato.certificaciones.length > 0
+            ? contrato.certificaciones.map(cert => `
+                <div class="history-item">
+                    <strong>Fecha: ${cert.fecha}</strong> - Tipo: ${cert.tipo} | <span style="color:#742774; font-weight:600;">${cert.monto}</span>
+                    <div style="color:#605E5C; font-size:0.75rem; margin-top:2px;">Detalle: ${cert.observaciones}</div>
+                </div>
+            `).join('')
+            : `<div style="padding: 10px; color: #a19f9d; font-size: 0.8rem;">Sin registros históricos guardados.</div>`;
+
+        panelContenedor.innerHTML = `
+            <div class="powerapps-form-viewer">
+                <div class="form-viewer-title"><i class="far fa-folder-open"></i> Formulario de Inspección Contratación</div>
+                <div class="powerapps-grid-fields">
+                    <div class="datacard-field"><label class="canvas-label">Código Contrato</label><div class="datacard-value">${contrato.numeroContrato}</div></div>
+                    <div class="datacard-field"><label class="canvas-label">Razón Social Contratista</label><div class="datacard-value">${contrato.contratista}</div></div>
+                    <div class="datacard-field"><label class="canvas-label">Identificación Tributaria</label><div class="datacard-value">${contrato.identificacion}</div></div>
+                    <div class="datacard-field" style="grid-column: span 2;"><label class="canvas-label">Objeto Técnico Integral</label><div class="datacard-value">${contrato.objetoPrincipal}</div></div>
+                    <div class="datacard-field"><label class="canvas-label">Presupuesto Asignado</label><div class="datacard-value" style="color:#742774;">${contrato.valorContrato}</div></div>
+                    <div class="datacard-field"><label class="canvas-label">Estrategia de Selección</label><div class="datacard-value">${contrato.proceso}</div></div>
+                    <div class="datacard-field"><label class="canvas-label">Funcionario Responsable</label><div class="datacard-value">${contrato.supervisor}</div></div>
+                    <div class="datacard-field"><label class="canvas-label">Línea Temporal de Vigencia</label><div class="datacard-value">${contrato.fechaInicio} al ${contrato.fechaFin}</div></div>
+                </div>
+            </div>
+
+            <div class="canvas-split-cards">
+                <div class="powerapps-card-container">
+                    <div class="card-container-title"><i class="fas fa-clipboard-list" style="color:#742774;"></i> Compromisos Contractuales</div>
+                    <div class="card-scrollable-content">
+                        ${listaObligacionesContratista}
+                        ${listaObligacionesEntidad}
+                    </div>
+                </div>
+                
+                <div class="powerapps-card-container">
+                    <div class="card-container-title"><i class="fas fa-history" style="color:#742774;"></i> Historial de Certificaciones</div>
+                    <div class="card-scrollable-content">
+                        ${listaCertificaciones}
+                    </div>
+                </div>
+            </div>
+
+            <div class="powerapps-pdf-section">
+                <div class="card-container-title"><i class="fas fa-file-pdf" style="color:#b22222;"></i> Control Canvas PDFViewer</div>
+                <div class="pdf-frame-container">
+                    <iframe class="pdf-embed" src="${contrato.cachedUrl}#toolbar=0" id="pdfIframeSandbox"></iframe>
+                </div>
+            </div>
+
+            <div class="canvas-action-bar">
+                <button class="powerapps-btn" onclick="ejecutarPatchNuevaCertificacion(${contrato.id})">
+                    <i class="fas fa-plus"></i> Nueva Certificación (Formula Patch)
+                </button>
+                <button class="powerapps-btn powerapps-btn-success" onclick="ejecutarRefrescoPdf(${contrato.id})">
+                    <i class="fas fa-sync-alt"></i> Re-generar PDF Certificado
+                </button>
+            </div>
+        `;
+    }
+
+    // Operación de inserción de datos avanzada (Simula la ejecución de la función Patch() de Power Apps)
+    function ejecutarPatchNuevaCertificacion(idContrato) {
+        const contrato = datasetApp.find(x => x.id === idContrato);
+        if(!contrato) return;
+
+        const valMonto = prompt("Ejecutando Patch() - Ingrese el valor de la certificación:", "$ 35,000,000");
+        if(!valMonto) return; // Cancelado por el operador
+
+        const valObs = prompt("Ejecutando Patch() - Escriba las observaciones técnicas:", "Cumplimiento del hito programado");
+        if(valObs === null) return;
+
+        // Estructuración del nuevo registro en la colección
+        const nuevaEstructura = {
+            fecha: new Date().toISOString().slice(0, 10),
+            tipo: "Parcial",
+            monto: valMonto,
+            observaciones: valObs || "Revisado sin observaciones estructurales"
+        };
+
+        contrato.certificaciones.push(nuevaEstructura);
+        contrato.estado = "Certificado Parcial";
+
+        // Actualizar la vista del PDF de inmediato
+        refrescarURLPdfContrato(contrato);
+        
+        // Re-filtrar para reflejar los estados y mantener el foco actual de selección
+        delegacionFiltrarYBuscar();
+        desplegarFormViewer(contrato);
+    }
+
+    // Forzar el refresco completo del visor binario refrescando la caché del Blob
+    function ejecutarRefrescoPdf(idContrato) {
+        const contrato = datasetApp.find(x => x.id === idContrato);
+        if(!contrato) return;
+
+        refrescarURLPdfContrato(contrato);
+        desplegarFormViewer(contrato);
+        alert("Control PDFViewer refrescado correctamente en base a los metadatos modificados.");
+    }
+
+    // Inicialización de Eventos Generales al presionar el Botón de Portada
+    document.getElementById("btnIngresarApp").addEventListener("click", () => {
+        // Ejecución de la lógica de precarga
+        inicializarEstructuraUrls();
+        construirGaleriaComponente(datasetApp);
+
+        // Desvanecimiento de la Splash Screen
+        document.getElementById("coverScreen").style.transform = "translateY(-100%)";
+        document.getElementById("mainApp").style.display = "grid";
+
+        // Auto-seleccionar primer elemento por defecto como hace Canvas App en Start
+        if(datasetApp.length > 0) {
+            comandoSeleccionarPorId(datasetApp[0].id);
+        }
+
+        // Asignación de Listeners para búsquedas automáticas y fluidas (Sin botones de buscar intermediarios)
+        document.getElementById("searchIdentificacion").addEventListener("input", delegacionFiltrarYBuscar);
+        document.getElementById("searchNumero").addEventListener("input", delegacionFiltrarYBuscar);
+        document.getElementById("searchProceso").addEventListener("change", delegacionFiltrarYBuscar);
+    });
+</script>
+</body>
+</html>
