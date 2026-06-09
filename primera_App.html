@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>¡Crea tu primera Canvas App con SharePoint Online!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F3F2F1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .canvas-container {
+            max-width: 1100px;
+            width: 100%;
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .power-header {
+            background: #742774;
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            border-bottom: 3px solid #008272;
+        }
+        
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+        
+        .logo-area i {
+            font-size: 1.3rem;
+        }
+        
+        .logo-area h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .badge-sharepoint {
+            background: #008272;
+            color: white;
+            padding: 0.3rem 0.9rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .slide-mockup-header {
+            background: #742774;
+            padding: 0.5rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            border-bottom: 3px solid #008272;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+
+        .carousel-wrapper {
+            position: relative;
+            padding: 1.2rem 1.5rem;
+            background: #FFFFFF;
+        }
+
+        .slides-container {
+            overflow: hidden;
+        }
+
+        .slides-track {
+            display: flex;
+            transition: transform 0.3s ease-in-out;
+            will-change: transform;
+        }
+
+        .slide {
+            flex: 0 0 100%;
+            background: white;
+            padding: 0.2rem;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #EAF4F2;
+            color: #008272;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 3px;
+            margin-bottom: 0.6rem;
+            border-left: 3px solid #008272;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #242424;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-desc {
+            font-size: 0.88rem;
+            line-height: 1.45;
+            color: #323130;
+            margin-bottom: 0.9rem;
+        }
+
+        .mockup-container {
+            background: #FAF9F8;
+            border: 1px solid #EDEBE9;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            padding: 0.9rem;
+        }
+
+        .real-screenshot {
+            max-width: 100%;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #EDEBE9;
+            margin-bottom: 0.7rem;
+            background: white;
+            max-height: 220px;
+            object-fit: contain;
+            width: auto;
+        }
+        
+        .connection-status {
+            background: #EAF4F2;
+            border-left: 4px solid #008272;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .tip-highlight {
+            background: #FFF4E6;
+            border-radius: 6px;
+            padding: 0.6rem 0.9rem;
+            margin-top: 0.7rem;
+            border-left: 3px solid #F7A800;
+            font-size: 0.8rem;
+        }
+
+        .maker-sidebar {
+            background: #F3F2F1;
+            border-right: 1px solid #EDEBE9;
+            width: 180px;
+            padding: 8px;
+            font-size: 0.75rem;
+        }
+        .maker-menu-item {
+            padding: 6px 10px;
+            margin-bottom: 2px;
+            color: #323130;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .maker-menu-item.active {
+            background: #EAEAEA;
+            font-weight: 600;
+            color: #742774;
+            border-left: 3px solid #742774;
+        }
+        
+        .fx-bar {
+            background: #FFFFFF;
+            border: 1px solid #D2D0CE;
+            padding: 0.4rem 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #0078D4;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        .fx-icon {
+            color: #742774;
+            font-weight: bold;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .btn-group {
+            margin-top: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-cluster {
+            display: flex;
+            gap: 6px;
+        }
+        .nav-btn {
+            background: #FFFFFF;
+            border: 1px solid #A19F9D;
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #323130;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .nav-btn:hover:not(:disabled) {
+            background: #742774;
+            border-color: #742774;
+            color: white;
+        }
+        .nav-btn.btn-secondary:hover:not(:disabled) {
+            background: #008272;
+            border-color: #008272;
+            color: white;
+        }
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .dots {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 1rem;
+        }
+        .dot {
+            width: 7px;
+            height: 7px;
+            background: #C8C6C4;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .dot.active {
+            background: #742774;
+            width: 18px;
+            border-radius: 4px;
+        }
+        .slide-counter {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: #605E5C;
+            font-weight: 500;
+        }
+        footer {
+            background: #F3F2F1;
+            text-align: center;
+            padding: 0.6rem;
+            font-size: 0.7rem;
+            color: #605E5C;
+            border-top: 1px solid #EDEBE9;
+        }
+        .sp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            background: white;
+        }
+        .sp-table th, .sp-table td {
+            padding: 6px;
+            border: 1px solid #EDEBE9;
+        }
+        .sp-table th {
+            background: #F3F2F1;
+            font-weight: 600;
+        }
+        .row-highlight {
+            background: #FFF4CE !important;
+        }
+        .badge-new {
+            background: #107C41;
+            color: white;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            margin-left: 5px;
+        }
+        .canvas-form {
+            max-width: 450px;
+            margin: 0 auto;
+            background: white;
+            padding: 0.8rem;
+            border: 1px solid #D2D0CE;
+        }
+        .form-card {
+            margin-bottom: 0.7rem;
+        }
+        .form-card label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: block;
+        }
+        .form-card input {
+            width: 100%;
+            padding: 5px;
+            font-size: 0.8rem;
+        }
+        @media (max-width: 750px) {
+            .carousel-wrapper { padding: 0.8rem; }
+            .step-title { font-size: 1.1rem; }
+            .maker-sidebar { display: none; }
+            .btn-group { justify-content: center; }
+            .real-screenshot { max-height: 180px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="canvas-container">
+    <div class="power-header">
+        <div class="logo-area">
+            <i class="fa-solid fa-handshake-angle"></i>
+            <div><h1>¡Tu app paso a paso!</h1></div>
+        </div>
+        <div class="badge-sharepoint">
+            <i class="fab fa-sharepoint"></i> Base de datos: SharePoint
+        </div>
+    </div>
+
+    <div class="carousel-wrapper">
+        <div class="slides-container">
+            <div class="slides-track" id="slidesTrack"></div>
+        </div>
+        
+        <div class="btn-group">
+            <div class="nav-cluster">
+                <button class="nav-btn btn-secondary" id="startSlideBtn" title="Ir al primer paso"><i class="fas fa-angle-double-left"></i> Inicio</button>
+                <button class="nav-btn" id="prevSlideBtn" title="Anterior"><i class="fas fa-arrow-left"></i> Anterior</button>
+            </div>
+            <div class="nav-cluster">
+                <button class="nav-btn" id="nextSlideBtn" title="Siguiente">Siguiente <i class="fas fa-arrow-right"></i></button>
+                <button class="nav-btn btn-secondary" id="endSlideBtn" title="Ir al último paso">Fin <i class="fas fa-angle-double-right"></i></button>
+            </div>
+        </div>
+        
+        <div class="dots" id="dotsContainer"></div>
+        <div class="slide-counter" id="slideCounter">Paso 1 de 13</div>
+    </div>
+
+    <footer>
+        <i class="fa-solid fa-face-smile"></i> ¡Diseñado para creadores de aplicaciones!
+    </footer>
+</div>
+
+<script>
+    // URLs de las imágenes desde GitHub
+    const IMG_STEP2 = "https://github.com/ftrujillocajamarca-web/cajaHerramientas/blob/1432481e87b28b5e3ea4a14c9a5c2f0ff22ff7b9/plantillas_powerApp.png?raw=true";
+    const IMG_STEP3 = "https://github.com/ftrujillocajamarca-web/cajaHerramientas/blob/1432481e87b28b5e3ea4a14c9a5c2f0ff22ff7b9/datos_powerApp.png?raw=true";
+    const IMG_STEP6 = "https://github.com/ftrujillocajamarca-web/cajaHerramientas/blob/7efdd62a4f2d1ff2eb73f47b5eff5e448baf77df/galeria_powerApp.png?raw=true";
+
+    const slidesData = [
+        {
+            step: 1,
+            title: "1. Entramos al portal de Power Apps",
+            description: "¡Vamos a empezar! Abre make.powerapps.com con tu cuenta de trabajo. Este es el hogar de los creadores: aquí verás tu 'Entorno', tu espacio personal para construir apps.",
+            visual: `
+                <div class="slide-mockup-header">
+                    <span style="font-size:0.8rem; font-weight:600;"><i class="fab fa-microsoft"></i> Power Apps Studio</span>
+                    <span style="font-size:0.7rem; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:3px;"><i class="fa-solid fa-layer-group"></i> Entorno: Desarrollo</span>
+                </div>
+                <div class="mockup-container" style="display:flex; gap:8px; background:#FFFFFF;">
+                    <div class="maker-sidebar">
+                        <div class="maker-menu-item active"><i class="fa-solid fa-house"></i> Inicio</div>
+                        <div class="maker-menu-item"><i class="fa-solid fa-plus"></i> Crear</div>
+                        <div class="maker-menu-item"><i class="fa-solid fa-folder"></i> Mis Apps</div>
+                    </div>
+                    <div style="flex:1; padding:8px;">
+                        <h4 style="font-size:0.9rem;">¡Te damos la bienvenida!</h4>
+                        <p style="font-size:0.75rem; color:#605E5C;">Aquí es donde la magia ocurre. Primer paso, listo.</p>
+                    </div>
+                </div>`
+        },
+        {
+            step: 2,
+            title: "2. Creamos una aplicación en blanco",
+            description: "Haz clic en 'Crear' y elige 'Aplicación de lienzo en blanco'. Selecciona la opción 'Con capacidad de respuesta' para que se adapte a cualquier pantalla: PC, tablet o móvil.",
+            visual: `
+                <div class="slide-mockup-header">
+                    <span style="font-size:0.8rem; font-weight:600;"><i class="fa-solid fa-camera"></i> Así se elige la plantilla</span>
+                </div>
+                <div class="mockup-container" style="background:#FFFFFF; text-align:center;">
+                    <img src="${IMG_STEP2}" alt="Selección de plantilla para Canvas App" class="real-screenshot" style="max-height: 190px;">
+                    <div class="tip-highlight">
+                        <i class="fa-solid fa-lightbulb"></i> <strong>Tip:</strong> La opción "Con capacidad de respuesta" es la más versátil, se ve bien en todos los dispositivos.
+                    </div>
+                </div>`
+        },
+        {
+            step: 3,
+            title: "3. Preparamos la conexión a tus datos",
+            description: "En el panel izquierdo, busca el ícono de Datos → Agregar datos. Escribe 'SharePoint' y selecciona el conector. Power Apps usará tu sesión de Microsoft 365, sin necesidad de contraseñas extra.",
+            visual: `
+                <div class="slide-mockup-header">
+                    <span style="font-size:0.8rem; font-weight:600;"><i class="fab fa-sharepoint"></i> Conectores disponibles</span>
+                </div>
+                <div class="mockup-container" style="background:#FFFFFF;">
+                    <img src="${IMG_STEP3}" alt="Selección del conector SharePoint" class="real-screenshot" style="max-height: 180px;">
+                    <div class="connection-status">
+                        <i class="fa-solid fa-circle-check" style="color:#008272;"></i> <strong>Conector listo:</strong> Al hacer clic, solo elige tu sitio de SharePoint.
+                    </div>
+                </div>`
+        },
+        {
+            step: 4,
+            title: "4. Creamos la lista en SharePoint",
+            description: "Ve a tu sitio de SharePoint y crea una lista llamada 'InventarioProductos'. Agrega columnas: Título (nombre), Cantidad (número), Precio Unitario y Categoría (opciones).",
+            visual: `
+                <div class="slide-mockup-header" style="background:#008272;">
+                    <span><i class="fab fa-sharepoint"></i> Lista InventarioProductos</span>
+                </div>
+                <div class="mockup-container">
+                    <table class="sp-table">
+                        <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Categoría</th></tr></thead>
+                        <tbody>
+                            <tr><td>Cable de Red Cat6</td><td>150</td><td>$4,500</td><td>Conectividad</td></tr>
+                            <tr><td>Switch Cisco 24P</td><td>12</td><td>$350,000</td><td>Hardware</td></tr>
+                        </tbody>
+                    </table>
+                </div>`
+        },
+        {
+            step: 5,
+            title: "5. Conectamos la lista a la app",
+            description: "Regresa a Power Apps. Pega la URL de tu sitio de SharePoint y verás aparecer 'InventarioProductos'. Selecciónala y haz clic en Conectar. ¡Tu app ya habla con SharePoint!",
+            visual: `<div class="slide-mockup-header"><span><i class="fa-solid fa-link"></i> Orígenes de datos</span></div><div class="mockup-container"><div style="background:#FFFFFF; border-left:4px solid #008272; padding:8px;"><i class="fab fa-sharepoint" style="color:#008272;"></i> <strong>✓ Conexión exitosa</strong><br><span style="font-size:0.75rem;">Lista "InventarioProductos" disponible.</span></div></div>`
+        },
+        {
+            step: 6,
+            title: "6. Mostramos los productos en una Galería",
+            description: "Inserta una Galería vertical. En su propiedad Items, escribe el nombre de tu lista: InventarioProductos. ¡Automágicamente verás tus productos!",
+            visual: `
+                <div class="slide-mockup-header">
+                    <span><i class="fa-solid fa-table-list"></i> Configurar Galería</span>
+                </div>
+                <div class="mockup-container" style="background:#FFFFFF; text-align:center;">
+                    <img src="${IMG_STEP6}" alt="Propiedad Items de la galería con InventarioProductos" class="real-screenshot" style="max-height: 170px;">
+                    <div class="fx-bar" style="margin-top: 5px; justify-content: center; padding: 4px;">
+                        <span class="fx-icon">fx</span> Items = InventarioProductos
+                    </div>
+                    <div class="tip-highlight" style="margin-top: 6px;">
+                        <i class="fa-regular fa-eye"></i> Al instante verás tus productos en la galería, listos para interactuar.
+                    </div>
+                </div>`
+        },
+        {
+            step: 7,
+            title: "7. Agregamos un Formulario para ver detalles",
+            description: "Añade un Formulario de edición y conéctalo a la misma lista. En su propiedad Item escribe: GaleriaProductos.Selected. Así mostrará los datos del producto seleccionado.",
+            visual: `<div class="slide-mockup-header"><span><i class="fa-solid fa-window-maximize"></i> Formulario sincronizado</span></div><div class="mockup-container"><div class="fx-bar" style="margin-bottom:6px;"><span class="fx-icon">fx</span> Item = GaleriaProductos.Selected</div><div class="canvas-form"><div class="form-card"><label>Nombre</label><input type="text" value="Cable de Red Cat6" disabled style="background:#F3F2F1;"></div><div class="form-card"><label>Cantidad</label><input type="text" value="150" disabled style="background:#F3F2F1;"></div></div></div>`
+        },
+        {
+            step: 8,
+            title: "8. El botón para Guardar Cambios",
+            description: "En el botón Guardar, ve a la propiedad OnSelect y escribe: SubmitForm(FormularioInventario). Así los cambios se envían directo a SharePoint.",
+            visual: `<div class="slide-mockup-header"><span><i class="fa-solid fa-code"></i> Fórmula Guardar</span></div><div class="mockup-container"><div class="fx-bar"><span class="fx-icon">fx</span> SubmitForm(FormularioInventario)</div><div style="text-align:center; margin-top:10px;"><button style="background:#742774; color:white; border:none; padding:6px 14px; border-radius:4px;"><i class="fa-solid fa-floppy-disk"></i> Guardar en SharePoint</button></div></div>`
+        },
+        {
+            step: 9,
+            title: "9. Ponemos una barra de búsqueda inteligente",
+            description: "Agrega un control de entrada de texto y cambia la fórmula de la galería a: Filter(InventarioProductos, StartsWith(Title, txtBuscar.Text)). La búsqueda será rapidísima.",
+            visual: `<div class="slide-mockup-header"><span><i class="fa-solid fa-magnifying-glass"></i> Búsqueda eficiente</span></div><div class="mockup-container"><div class="fx-bar"><span class="fx-icon">fx</span> Filter(InventarioProductos, StartsWith(Title, txtBuscar.Text))</div><div class="tip-highlight"><i class="fa-regular fa-clock"></i> Solo trae los registros que coinciden, ahorrando recursos.</div></div>`
+        },
+        {
+            step: 10,
+            title: "10. Así se ve tu aplicación terminada",
+            description: "Tu app ya tiene buscador, galería y formulario. Al escribir, la lista se filtra; al hacer clic, el formulario se actualiza. ¡Profesional y lista!",
+            visual: `<div class="slide-mockup-header"><span><i class="fa-solid fa-mobile-screen-button"></i> Vista previa</span></div><div class="mockup-container" style="background:#F3F2F1;"><div style="background:#742774; padding:6px; color:white; display:flex; font-size:0.8rem;"><i class="fa-solid fa-check-circle"></i> Mi Inventario <input type="text" placeholder="Buscar..." style="margin-left:auto; width:100px; font-size:0.7rem;"></div><div style="display:flex; gap:6px; margin-top:6px;"><div style="flex:1; background:white; padding:5px; font-size:0.75rem;"><strong>Switch Cisco 24P</strong><br>Hardware | 12</div><div style="flex:1.2; background:white; padding:6px; font-size:0.75rem;"><strong>Detalle</strong><br><input value="Switch Cisco 24P" style="width:100%; font-size:0.7rem;"><br><input value="12" style="width:100%; font-size:0.7rem;"></div></div></div>`
+        },
+        {
+            step: 11,
+            title: "11. ¡Guardando datos en tiempo real!",
+            description: "Modifica un valor, presiona Guardar y al instante se actualiza en SharePoint. Sin demoras, sin pérdida de datos.",
+            visual: `<div class="slide-mockup-header" style="background:#008272;"><span><i class="fab fa-sharepoint"></i> SharePoint actualizado</span></div><div class="mockup-container"><table class="sp-table"><thead><tr><th>Producto</th><th>Cantidad</th><th>Modificación</th></tr></thead><tbody><tr><td>Cable de Red</td><td>150</td><td>Hace 2h</td></tr><tr class="row-highlight"><td>Switch Cisco</td><td>14 <span class="badge-new">Nuevo</span></td><td>¡Justo ahora! <i class="fa-solid fa-bolt"></i></td></tr></tbody></table></div>`
+        },
+        {
+            step: 12,
+            title: "12. Guardamos y publicamos el trabajo",
+            description: "Archivo → Guardar (Ctrl+S). Luego haz clic en Publicar. Así la versión oficial estará disponible para tu equipo.",
+            visual: `<div class="slide-mockup-header"><span><i class="fa-solid fa-cloud-arrow-up"></i> Publicar app</span></div><div class="mockup-container" style="text-align:center;"><div style="border:1px solid #D2D0CE; padding:12px; max-width:300px; margin:0 auto;"><span style="font-weight:600;">¿Publicar versión final?</span><p style="font-size:0.7rem;">Todos verán los cambios.</p><button style="background:#742774; color:white; border:none; padding:4px 12px; border-radius:3px;">Publicar ahora</button></div></div>`
+        },
+        {
+            step: 13,
+            title: "13. Comparte tu app y configura accesos",
+            description: "Usa el botón Compartir, escribe los correos de tu equipo. No olvides dar permisos de edición en la lista de SharePoint también.",
+            visual: `<div class="slide-mockup-header"><span><i class="fa-solid fa-user-group"></i> Compartir</span></div><div class="mockup-container"><div style="background:white; border:1px solid #D2D0CE; padding:10px;"><div style="display:flex; align-items:center;"><i class="fa-solid fa-users" style="color:#742774;"></i> <strong>Equipo Logística</strong> <span style="margin-left:auto; background:#EAEAEA; padding:2px 6px; font-size:0.7rem;">Acceso total</span></div><div style="margin-top:6px; font-size:0.7rem; color:#008272;"><i class="fa-solid fa-lock-open"></i> Permisos también en SharePoint. ¡Listo!</div></div></div>`
+        }
+    ];
+
+    let currentIndex = 0;
+    const slidesTrack = document.getElementById('slidesTrack');
+    const dotsContainer = document.getElementById('dotsContainer');
+    const prevBtn = document.getElementById('prevSlideBtn');
+    const nextBtn = document.getElementById('nextSlideBtn');
+    const startBtn = document.getElementById('startSlideBtn');
+    const endBtn = document.getElementById('endSlideBtn');
+    const slideCounterSpan = document.getElementById('slideCounter');
+
+    function buildSlides() {
+        slidesTrack.innerHTML = '';
+        slidesData.forEach((slide) => {
+            const slideDiv = document.createElement('div');
+            slideDiv.classList.add('slide');
+            slideDiv.innerHTML = `
+                <div class="step-number">PASO ${slide.step}</div>
+                <div class="step-title">${slide.title}</div>
+                <div class="step-desc">${slide.description}</div>
+                ${slide.visual}
+            `;
+            slidesTrack.appendChild(slideDiv);
+        });
+    }
+
+    function updateCarousel() {
+        const width = slidesTrack.parentElement.clientWidth;
+        slidesTrack.style.transform = `translateX(-${currentIndex * width}px)`;
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach((dot, i) => {
+            if (i === currentIndex) dot.classList.add('active');
+            else dot.classList.remove('active');
+        });
+        slideCounterSpan.innerText = `Paso ${currentIndex + 1} de ${slidesData.length}`;
+        prevBtn.disabled = (currentIndex === 0);
+        startBtn.disabled = (currentIndex === 0);
+        nextBtn.disabled = (currentIndex === slidesData.length - 1);
+        endBtn.disabled = (currentIndex === slidesData.length - 1);
+    }
+
+    function createDots() {
+        dotsContainer.innerHTML = '';
+        slidesData.forEach((_, idx) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (idx === currentIndex) dot.classList.add('active');
+            dot.addEventListener('click', () => { currentIndex = idx; updateCarousel(); });
+            dotsContainer.appendChild(dot);
+        });
+    }
+
+    function goNext() { if (currentIndex < slidesData.length - 1) { currentIndex++; updateCarousel(); } }
+    function goPrev() { if (currentIndex > 0) { currentIndex--; updateCarousel(); } }
+    function goFirst() { currentIndex = 0; updateCarousel(); }
+    function goLast() { currentIndex = slidesData.length - 1; updateCarousel(); }
+
+    let resizeTimer;
+    window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => updateCarousel(), 100); });
+    
+    buildSlides();
+    createDots();
+    updateCarousel();
+    
+    prevBtn.addEventListener('click', goPrev);
+    nextBtn.addEventListener('click', goNext);
+    startBtn.addEventListener('click', goFirst);
+    endBtn.addEventListener('click', goLast);
+    window.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') goPrev(); if (e.key === 'ArrowRight') goNext(); if (e.key === 'Home') goFirst(); if (e.key === 'End') goLast(); });
+    const resizeObserver = new ResizeObserver(() => updateCarousel());
+    resizeObserver.observe(slidesTrack.parentElement);
+</script>
+</body>
+</html>
