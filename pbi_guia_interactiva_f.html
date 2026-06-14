@@ -4,25 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Power BI Desktop – Guía Interactiva</title>
+<!-- Importar la fuente Montserrat desde Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 /* Variables por defecto (Modo Oscuro) */
 :root {
   --color-fondo-panel: #0f1824;
+  --color-fondo-tarjeta: #151e2b; /* <-- NUEVA: Fondo oscuro intermedio para la tarjeta */
   --color-texto-desc: #a0b8cc;
 }
 
 /* Detector de Modo Claro en el navegador */
 @media (prefers-color-scheme: light) {
   :root {
-    --color-fondo-panel: #ffffff; /* Fondo claro para las tarjetas */
+    --color-fondo-panel: #ffffff; 
+    --color-fondo-tarjeta: #f4f6f9; /* <-- NUEVA: Fondo gris muy claro para la tarjeta */
     --color-texto-desc: #1a2a3a;  /* Texto oscuro con alto contraste */
   }
 }
 
 body {
-  background:#111820;
-  font-family:'Segoe UI',system-ui,sans-serif;
+  background: var(--color-fondo-body);
+  font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif; /* <-- CAMBIADO */
   min-height:100vh;
   display:flex;
   flex-direction:column;
@@ -38,8 +44,7 @@ header p{font-size:.75rem;color:#5a7a94;margin-top:3px}
 .hotspot{position:absolute;border-radius:50%;cursor:pointer;background:transparent;border:2px solid transparent;transform:translate(-50%,-50%);width:3.7%;aspect-ratio:1;transition:box-shadow .18s ease,border-color .18s ease,background .18s ease}
 .hotspot:hover{box-shadow:0 0 0 5px rgba(30,145,200,.38);border-color:rgba(30,145,200,.7);background:rgba(30,145,200,.1)}
 .hotspot.active{box-shadow:0 0 0 6px rgba(0,180,230,.5);border-color:rgba(0,200,245,.9);background:rgba(30,145,200,.15)}
-
-.info-panel{position:fixed;top:0;right:-440px;width:400px;max-width:92vw;height:100vh;background:#151e2b;border-left:2px solid #1a5e8a;display:flex;flex-direction:column;transition:right .3s cubic-bezier(.4,0,.2,1);z-index:1000;overflow:hidden}
+.info-panel{position:fixed;top:0;right:-440px;width:400px;max-width:92vw;height:100vh;background:var(--color-fondo-panel);border-left:2px solid #1a5e8a;display:flex;flex-direction:column;transition:right .3s cubic-bezier(.4,0,.2,1);z-index:1000;overflow:hidden}
 .info-panel.open{right:0}
 .panel-header{background:#0f1824;padding:14px 16px;display:flex;align-items:center;gap:11px;border-bottom:1px solid #1e3448;flex-shrink:0}
 .pnum{width:34px;height:34px;border-radius:50%;border:2.5px solid #1e8fc8;color:#1e8fc8;font-size:.95rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -73,7 +78,7 @@ header p{font-size:.75rem;color:#5a7a94;margin-top:3px}
 .tags{display:flex;gap:5px;flex-wrap:wrap;padding:2px 0 2px}
 .tag{background:#102030;color:#5a9fc8;font-size:.63rem;font-weight:600;padding:2px 8px;border-radius:3px;border:1px solid #1e3a52;letter-spacing:.04em}
 .card {
-  background: var(--color-fondo-panel); /* Cambiará según el modo */
+  background: var(--color-fondo-tarjeta); /* <-- CAMBIADO: Usa la variable específica de la tarjeta */
   border:1px solid #1c2e42;
   border-radius:8px;
   padding:13px 15px;
