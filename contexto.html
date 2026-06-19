@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contextos en DAX · Power BI con ❤️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f2f1ef;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .carousel-card {
+            max-width: 920px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 32px;
+            box-shadow: 0 20px 48px -12px rgba(0, 20, 30, 0.25), 0 8px 16px -8px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.1s ease;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 4px;
+            background: #e6e9ec;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 14.285%;
+            background: linear-gradient(90deg, #7B4B9A, #B37FCA);
+            transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .header {
+            background: linear-gradient(145deg, #1F2937 0%, #2D3A4D 100%);
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            letter-spacing: -0.01em;
+            background: linear-gradient(135deg, #FCD34D, #F9A8D4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide-indicator {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #E5E7EB;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .slides-wrapper {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            width: 700%;
+        }
+
+        .slide {
+            width: 14.2857%;
+            flex-shrink: 0;
+            padding: 32px 28px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+            min-height: 380px;
+            background: #ffffff;
+        }
+
+        @media (max-width: 700px) {
+            .slide {
+                grid-template-columns: 1fr;
+                padding: 24px 20px;
+                gap: 20px;
+            }
+        }
+
+        .visual-area {
+            background: #f9fafc;
+            border-radius: 20px;
+            padding: 16px 14px;
+            border: 1px solid #eaedf2;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        /* --- TABLAS MEJORADAS (más realistas) --- */
+        .sim-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .sim-table th {
+            background: #2D3A4D;
+            color: white;
+            font-weight: 500;
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 0.7rem;
+            letter-spacing: 0.02em;
+        }
+
+        .sim-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #F0F2F5;
+            background: white;
+        }
+
+        .sim-table tr:last-child td { border-bottom: none; }
+
+        .row-focus {
+            background-color: #FDF6E3 !important;
+            border-left: 4px solid #F5B041;
+            font-weight: 500;
+        }
+
+        .filter-out {
+            opacity: 0.3;
+            text-decoration: line-through 1px rgba(0,0,0,0.15);
+        }
+
+        .filter-active {
+            background-color: #E9F0FA !important;
+            border-left: 4px solid #5D8FC9;
+        }
+
+        /* --- GRÁFICOS REALISTAS (Power BI style) --- */
+        .card-metric {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            width: 100%;
+            border: 1px solid #E9EDF2;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1F2937;
+            letter-spacing: -0.02em;
+        }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: #6B7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 80px;
+            padding-top: 8px;
+        }
+
+        .bar {
+            flex: 1;
+            background: #7B4B9A;
+            border-radius: 6px 6px 0 0;
+            min-height: 8px;
+            transition: height 0.2s;
+        }
+
+        .bar:nth-child(1) { height: 42px; background: #9F7ACA; }
+        .bar:nth-child(2) { height: 68px; background: #7B4B9A; }
+        .bar:nth-child(3) { height: 28px; background: #B37FCA; }
+        .bar:nth-child(4) { height: 54px; background: #8B5FBF; }
+        .bar:nth-child(5) { height: 36px; background: #A97BC9; }
+
+        .donut-placeholder {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: conic-gradient(#7B4B9A 0% 62%, #E5E7EB 62% 100%);
+            margin: 0 auto;
+            position: relative;
+        }
+        .donut-placeholder::after {
+            content: '62%';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1F2937;
+            background: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .filter-pill {
+            background: #E9F0FA;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #2D3A4D;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        /* --- TEXTO --- */
+        .text-area {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .text-area .tag {
+            display: inline-block;
+            background: #EDE9FE;
+            color: #5B3B8C;
+            font-weight: 600;
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 40px;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+            align-self: flex-start;
+        }
+
+        .text-area h2 {
+            font-size: 1.4rem;
+            font-weight: 650;
+            color: #1e293b;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+
+        .text-area p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #2c3e50;
+            margin: 6px 0;
+        }
+
+        .highlight-box {
+            background: #F3F6FA;
+            border-radius: 12px;
+            padding: 12px 16px;
+            border-left: 4px solid #9F7ACA;
+            font-size: 0.9rem;
+            color: #1e293b;
+            margin-top: 6px;
+        }
+
+        .highlight-box code {
+            background: #e9ecf0;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #1F2937;
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            margin-top: 6px;
+            width: 100%;
+        }
+
+        .code-block .keyword { color: #FCD34D; }
+        .code-block .func { color: #93C5FD; }
+        .code-block .str { color: #A7F3D0; }
+
+        /* --- BOTONES --- */
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 28px;
+            background: #f8f9fb;
+            border-top: 1px solid #e9edf2;
+        }
+
+        .btn {
+            background: #1F2937;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #2D3A4D;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .btn:active:not(:disabled) { transform: scale(0.96); }
+
+        .btn:disabled {
+            background: #cdd3db;
+            color: #7a818b;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-icon { font-size: 1.2rem; line-height: 1; }
+
+        .badge-soft {
+            background: #E2E8F0;
+            border-radius: 40px;
+            padding: 2px 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.2rem; }
+            .btn { padding: 8px 16px; font-size: 0.8rem; }
+            .metric-value { font-size: 1.6rem; }
+        }
+
+        /* --- NUEVOS ESTILOS PARA GRÁFICOS REALISTAS --- */
+        .chart-container {
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            padding: 12px 14px;
+            border: 1px solid #E9EDF2;
+        }
+
+        .chart-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 6px;
+        }
+
+        .horizontal-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+
+        .horizontal-bar .label {
+            font-size: 0.7rem;
+            width: 50px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .horizontal-bar .track {
+            flex: 1;
+            height: 18px;
+            background: #F0F2F5;
+            border-radius: 40px;
+            overflow: hidden;
+        }
+
+        .horizontal-bar .fill {
+            height: 100%;
+            border-radius: 40px;
+            background: linear-gradient(90deg, #7B4B9A, #B37FCA);
+            transition: width 0.3s;
+        }
+
+        .horizontal-bar .value {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1F2937;
+            width: 30px;
+            text-align: right;
+        }
+
+        /* --- SLIDE 7: IMAGEN PROFESIONAL --- */
+        .mastery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .mastery-card {
+            background: white;
+            border-radius: 14px;
+            padding: 14px 12px;
+            border: 1px solid #E9EDF2;
+            text-align: center;
+            transition: all 0.15s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .mastery-card .icon {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
+        .mastery-card .title {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #1F2937;
+        }
+        .mastery-card .desc {
+            font-size: 0.6rem;
+            color: #6B7280;
+            margin-top: 2px;
+        }
+        .mastery-card.highlight {
+            border-color: #7B4B9A;
+            background: #F8F5FF;
+        }
+
+        .context-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: #4B5563;
+            background: #F3F6FA;
+            padding: 8px 14px;
+            border-radius: 40px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .context-flow span {
+            background: #7B4B9A;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="carousel-card">
+    <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="barFill"></div>
+    </div>
+
+    <div class="header">
+        <h1 id="mainTitle">🌱 Contexto en DAX · La esencia</h1>
+        <span class="slide-indicator" id="slideNum">1 / 7</span>
+    </div>
+
+    <div class="slides-wrapper" id="slidesContainer">
+
+        <!-- SLIDE 1: INTRO con gráfico de barras realista -->
+        <div class="slide">
+            <div class="visual-area">
+                <div class="chart-container">
+                    <div class="chart-title">📊 Ventas por categoría (ejemplo)</div>
+                    <div class="horizontal-bar">
+                        <span class="label">Electrónica</span>
+                        <div class="track"><div class="fill" style="width:78%;"></div></div>
+                        <span class="value">78%</span>
+                    </div>
+                    <div class="horizontal-bar">
+                        <span class="label">Muebles</span>
+                        <div class="track"><div class="fill" style="width:45%;"></div></div>
+                        <span class="value">45%</span>
+                    </div>
+                    <div class="horizontal-bar">
+                        <span class="label">Ropa</span>
+                        <div class="track"><div class="fill" style="width:62%;"></div></div>
+                        <span class="value">62%</span>
+                    </div>
+                    <div class="horizontal-bar">
+                        <span class="label">Alimentos</span>
+                        <div class="track"><div class="fill" style="width:30%;"></div></div>
+                        <span class="value">30%</span>
+                    </div>
+                    <div style="margin-top:8px; font-size:0.6rem; color:#9CA3AF; text-align:center;">
+                        ⚡ El contexto cambia lo que ves
+                    </div>
+                </div>
+            </div>
+            <div class="text-area">
+                <span class="tag">✨ Para empezar</span>
+                <h2>El contexto lo es todo</h2>
+                <p>Cuando escribes una medida en Power BI, <strong>no</strong> calculas sobre toda la tabla, sino sobre un “universo” de datos que depende del lugar y los filtros.</p>
+                <div class="highlight-box">
+                    🌈 <strong>Mismo código, diferentes resultados</strong> — <code>SUM(Ventas[Monto])</code> cambiará si estás en una tarjeta, una matriz o con segmentaciones.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Contexto de fila con tabla mejorada -->
+        <div class="slide">
+            <div class="visual-area">
+                <table class="sim-table">
+                    <tr><th>Producto</th><th>Precio</th><th>Cant.</th><th>Total (fila)</th></tr>
+                    <tr><td>ERP Pro</td><td>120</td><td>2</td><td>240</td></tr>
+                    <tr class="row-focus"><td>Azure SQL</td><td>180</td><td>1</td><td>180 ✅</td></tr>
+                    <tr><td>Consultoría</td><td>250</td><td>3</td><td>750</td></tr>
+                </table>
+                <div style="margin-top:8px; font-size:0.7rem; color:#4B5563; background:#EFF6FF; padding:4px 12px; border-radius:40px;">✔️ Fila actual resaltada</div>
+            </div>
+            <div class="text-area">
+                <span class="tag">🔍 Contexto de fila</span>
+                <h2>Fila por fila · natural</h2>
+                <p>Cuando creas una <strong>columna calculada</strong>, DAX evalúa cada fila de forma aislada. Piensa: <em>“¿qué hay en esta fila?”</em></p>
+                <div class="highlight-box">
+                    ✨ Ejemplo: <code>Precio * Cantidad</code> → funciona perfecto, porque DAX “ve” los valores de esa fila.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Error común y buenas prácticas -->
+        <div class="slide">
+            <div class="visual-area">
+                <div style="background:#ffffff; padding:16px; border-radius:18px; border:1px solid #E2E8F0; width:100%;">
+                    <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+                        <span style="background:#FEE2E2; padding:0 10px; border-radius:40px; color:#991B1B; font-weight:600; font-size:0.7rem;">⚠️ Cuidado</span>
+                    </div>
+                    <div style="background:#F8FAFC; padding:8px 10px; border-radius:12px; font-family:monospace; font-size:0.8rem;">
+                        <span style="color:#B91C1C;">Margen</span> = Ventas[Monto] <span style="color:#2563EB;">-</span> <span style="background:#DBEAFE; padding:0 4px;">SUM</span>(Ventas[Costo])
+                    </div>
+                    <p style="font-size:0.75rem; color:#475569; margin-top:8px;">❌ <strong>SUM</strong> dentro de una columna calculada <br> ignora la fila y suma toda la tabla.</p>
+                </div>
+            </div>
+            <div class="text-area">
+                <span class="tag">🧠 Buenas prácticas</span>
+                <h2>No mezcles contextos</h2>
+                <p>El contexto de fila es <strong>horizontal</strong>: opera dentro de la fila. Si usas funciones de agregación como <code>SUM</code> o <code>AVERAGE</code>, estás pidiendo un contexto de filtro, y se rompe la lógica.</p>
+                <div class="highlight-box">
+                    💡 Para operaciones fila a fila, usa operadores simples o funciones <code>X</code> (ej. <code>SUMX</code>) si necesitas iterar.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Contexto de filtro con tabla y filtro visible -->
+        <div class="slide">
+            <div class="visual-area">
+                <div style="font-size:0.7rem; font-weight:600; color:#2D3A4D; background:#E9F0FA; padding:2px 14px; border-radius:40px; margin-bottom:8px;">🔎 Filtro: Ciudad = Bogotá</div>
+                <table class="sim-table">
+                    <tr><th>Ciudad</th><th>Producto</th><th>Monto</th></tr>
+                    <tr class="filter-out"><td>Medellín</td><td>ERP</td><td>$100</td></tr>
+                    <tr class="filter-active"><td>Bogotá</td><td>Azure</td><td>$150</td></tr>
+                    <tr class="filter-active"><td>Bogotá</td><td>Consultoría</td><td>$300</td></tr>
+                    <tr class="filter-out"><td>Cali</td><td>ERP</td><td>$200</td></tr>
+                </table>
+                <div style="margin-top:6px; font-size:0.65rem; color:#2563EB;">✅ Solo Bogotá participa en la medida</div>
+            </div>
+            <div class="text-area">
+                <span class="tag">🧩 Contexto de filtro</span>
+                <h2>El escenario del reporte</h2>
+                <p>Es el contexto de las <strong>medidas</strong>. Todo lo que el usuario selecciona (segmentadores, filtros, filas/columnas de una matriz) define qué filas están “activas” para el cálculo.</p>
+                <div class="highlight-box">
+                    🎯 Antes de calcular, la tabla se reduce a las filas que cumplen los criterios. El resto <em>desaparece</em> para la medida.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: CALCULATE con gráfico de dona realista -->
+        <div class="slide">
+            <div class="visual-area">
+                <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+                    <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap; justify-content:center;">
+                        <div>
+                            <div class="donut-placeholder"></div>
+                            <div style="font-size:0.6rem; color:#6B7280; text-align:center; margin-top:4px;">Total Ventas</div>
+                        </div>
+                        <div style="font-size:0.7rem; background:#F3F4F6; padding:6px 12px; border-radius:40px; color:#1F2937;">
+                            <span style="font-weight:600;">CALCULATE</span> modifica el contexto
+                        </div>
+                    </div>
+                    <div style="margin-top:6px; font-size:0.7rem; color:#4B5563; background:#E9F0FA; padding:3px 12px; border-radius:40px;">
+                        🔄 Ignora filtros con <code style="background:#DBEAFE; padding:0 6px; border-radius:4px;">ALL</code>
+                    </div>
+                </div>
+            </div>
+            <div class="text-area">
+                <span class="tag">⚡ CALCULATE</span>
+                <h2>El rey de la modificación</h2>
+                <p><code>CALCULATE</code> es la única función que puede <strong>alterar, añadir o quitar</strong> filtros del contexto actual. Es el motor de la magia en DAX.</p>
+                <div class="highlight-box">
+                    🧙‍♂️ Ejemplo: <code>CALCULATE([Total Ventas], ALL(Producto))</code> → ignora los filtros de producto y da el total absoluto.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Contexto de consulta con código mejorado -->
+        <div class="slide">
+            <div class="visual-area">
+                <div style="width:100%; background:#F1F5F9; border-radius:14px; padding:12px; border:1px solid #D1D9E6;">
+                    <span style="color:#2563EB; font-weight:600; font-size:0.75rem;">EVALUATE</span>
+                    <div style="background:#1E293B; border-radius:10px; padding:10px; margin-top:6px; color:#CBD5E1; font-family:monospace; font-size:0.7rem; overflow-x:auto;">
+                        <span style="color:#FCD34D;">SUMMARIZECOLUMNS</span>(<br>
+                        &nbsp;&nbsp;'Clientes'[Ciudad],<br>
+                        &nbsp;&nbsp;<span style="color:#A7F3D0;">"Ventas"</span>, [Total Ventas]<br>
+                        )
+                    </div>
+                    <div style="margin-top:6px; font-size:0.65rem; color:#6B7280; text-align:center;">
+                        📡 La consulta que genera el visual
+                    </div>
+                </div>
+            </div>
+            <div class="text-area">
+                <span class="tag">📡 Contexto de consulta</span>
+                <h2>La petición final</h2>
+                <p>Es la <strong>consulta DAX</strong> que Power BI envía al motor para obtener los datos que ves en un visual. Cada vez que arrastras un campo, se genera una consulta con su propio contexto.</p>
+                <div class="highlight-box">
+                    🧠 Aunque no la veas, la consulta define los sub‑contextos de cada celda del gráfico.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: RESUMEN PROFESIONAL con grid de conceptos -->
+        <div class="slide">
+            <div class="visual-area">
+                <div style="width:100%;">
+                    <div class="mastery-grid">
+                        <div class="mastery-card highlight">
+                            <div class="icon">🔍</div>
+                            <div class="title">Contexto de Fila</div>
+                            <div class="desc">Opera fila por fila</div>
+                        </div>
+                        <div class="mastery-card">
+                            <div class="icon">🧩</div>
+                            <div class="title">Contexto de Filtro</div>
+                            <div class="desc">Filtros del reporte</div>
+                        </div>
+                        <div class="mastery-card">
+                            <div class="icon">⚡</div>
+                            <div class="title">CALCULATE</div>
+                            <div class="desc">Modifica el contexto</div>
+                        </div>
+                        <div class="mastery-card">
+                            <div class="icon">📡</div>
+                            <div class="title">Contexto de Consulta</div>
+                            <div class="desc">La petición final</div>
+                        </div>
+                    </div>
+                    <div class="context-flow">
+                        <span>DAX</span> → El contexto define el <strong>qué</strong> y el <strong>cómo</strong>
+                    </div>
+                    <div style="margin-top:10px; font-size:0.6rem; color:#9CA3AF; text-align:center; border-top:1px solid #E9EDF2; padding-top:8px;">
+                        🎯 Domina el contexto, domina Power BI
+                    </div>
+                </div>
+            </div>
+            <div class="text-area">
+                <span class="tag">🎯 En resumen</span>
+                <h2>El contexto es tu aliado</h2>
+                <p>Entender el contexto de fila, filtro y consulta te dará <strong>superpoderes</strong> en Power BI. Y recuerda: <code>CALCULATE</code> es la llave para cambiar las reglas del juego.</p>
+                <div class="highlight-box" style="border-left-color:#FCD34D;">
+                    🌟 <strong>Practica</strong>: prueba una medida con y sin filtros, observa cómo cambia. ¡Eso es el contexto en acción!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-controls">
+        <button class="btn" id="btnPrev" disabled>
+            <span class="btn-icon">←</span> Anterior
+        </button>
+        <button class="btn" id="btnNext">
+            Siguiente <span class="btn-icon">→</span>
+        </button>
+    </div>
+</div>
+
+<script>
+    const container = document.getElementById('slidesContainer');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const slideNum = document.getElementById('slideNum');
+    const barFill = document.getElementById('barFill');
+    const mainTitle = document.getElementById('mainTitle');
+
+    let current = 0;
+    const total = 7;
+
+    const titles = [
+        "🌱 Contexto en DAX · La esencia",
+        "🔍 Contexto de fila · paso a paso",
+        "🧠 Buenas prácticas en fila",
+        "🧩 Contexto de filtro · el escenario",
+        "⚡ CALCULATE · el superpoder",
+        "📡 Contexto de consulta · bajo el capó",
+        "🎯 Resumen · el contexto es tu aliado"
+    ];
+
+    function updateSlide() {
+        container.style.transform = `translateX(-${current * (100 / total)}%)`;
+        slideNum.innerText = `${current + 1} / ${total}`;
+        mainTitle.innerText = titles[current];
+        barFill.style.width = `${((current + 1) / total) * 100}%`;
+
+        btnPrev.disabled = current === 0;
+        btnNext.disabled = current === total - 1;
+    }
+
+    btnNext.addEventListener('click', () => {
+        if (current < total - 1) { current++; updateSlide(); }
+    });
+
+    btnPrev.addEventListener('click', () => {
+        if (current > 0) { current--; updateSlide(); }
+    });
+</script>
+</body>
+</html>
