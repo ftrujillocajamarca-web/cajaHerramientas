@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CREA TU DASHBOARD EN POWER BI · Carrusel</title>
+  <!-- Google Font: Inter + Segoe UI como fallback -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #F5F5F5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    /* contenedor principal del carrusel */
+    .carousel-wrapper {
+      max-width: 1280px;
+      width: 100%;
+      background: #FFFFFF;
+      border-radius: 32px;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* barra de progreso superior */
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #E0E0E0;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #F2C811;
+      transition: width 0.45s ease;
+    }
+
+    /* contenedor slides */
+    .slides-container {
+      position: relative;
+      min-height: 520px;
+      background: white;
+    }
+
+    .slide {
+      display: none;
+      flex-direction: row;
+      align-items: stretch;
+      padding: 2rem 2rem 2rem 2rem;
+      gap: 2rem;
+      animation: fadeSlide 0.5s ease;
+      min-height: 480px;
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes fadeSlide {
+      0% { opacity: 0.4; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* columna izquierda (60%) */
+    .slide-image {
+      flex: 0 0 60%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #FAFAFA;
+      border-radius: 24px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      min-height: 320px;
+    }
+
+    .slide-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      transition: transform 0.2s;
+      max-height: 420px;
+    }
+
+    /* columna derecha (40%) */
+    .slide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.2rem 0;
+    }
+
+    .step-badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #F2C811;
+      background: #1F1F1F;
+      display: inline-block;
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      letter-spacing: 0.3px;
+      align-self: flex-start;
+      margin-bottom: 0.25rem;
+    }
+
+    .slide-content h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #1F1F1F;
+      line-height: 1.2;
+      margin: 0.2rem 0 0.1rem 0;
+      letter-spacing: -0.02em;
+    }
+
+    .content-block {
+      margin-top: 0.5rem;
+    }
+
+    .content-block p {
+      font-size: 0.95rem;
+      color: #333333;
+      line-height: 1.5;
+      margin-bottom: 0.1rem;
+    }
+
+    .content-block strong {
+      color: #1F1F1F;
+      font-weight: 600;
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      letter-spacing: 0.2px;
+    }
+
+    .badge-tip {
+      background: #F2C81120;
+      border-left: 4px solid #F2C811;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      margin: 0.6rem 0 0.2rem 0;
+    }
+
+    .badge-tip span {
+      font-weight: 600;
+      color: #1F1F1F;
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-tip ul {
+      list-style: none;
+      margin-top: 0.2rem;
+    }
+
+    .badge-tip li {
+      font-size: 0.9rem;
+      color: #1F1F1F;
+      padding: 0.1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .badge-tip li::before {
+      content: "✓";
+      color: #F2C811;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .highlight-box {
+      background: #F5F5F5;
+      padding: 0.6rem 1rem;
+      border-radius: 12px;
+      margin-top: 0.3rem;
+    }
+
+    .highlight-box code {
+      background: #1F1F1F10;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-family: 'Inter', monospace;
+      font-weight: 500;
+      color: #1F1F1F;
+    }
+
+    /* slide final celebración */
+    .slide-final {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2.5rem 2rem;
+      gap: 1.2rem;
+      min-height: 420px;
+    }
+
+    .slide-final.active {
+      display: flex;
+    }
+
+    .slide-final h2 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #1F1F1F;
+    }
+
+    .slide-final .emoji-big {
+      font-size: 4rem;
+    }
+
+    .slide-final p {
+      max-width: 550px;
+      color: #333333;
+      font-size: 1.2rem;
+      line-height: 1.5;
+    }
+
+    .btn-cta {
+      background: #F2C811;
+      border: none;
+      padding: 0.9rem 2.8rem;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #1F1F1F;
+      box-shadow: 0 6px 0 #d4a90a;
+      transition: 0.15s ease;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      letter-spacing: 0.3px;
+      border: 1px solid #e0b80e;
+    }
+
+    .btn-cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 0 #b8920a;
+      background: #f5d32e;
+    }
+
+    /* navegación inferior */
+    .nav-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem 1.5rem 2rem;
+      background: white;
+      border-top: 1px solid #EFEFEF;
+    }
+
+    .indicators {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      background: #D0D0D0;
+      border-radius: 40px;
+      transition: 0.2s ease;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background: #F2C811;
+      width: 28px;
+    }
+
+    .step-indicator {
+      font-weight: 500;
+      color: #1F1F1F;
+      background: #F5F5F5;
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      margin-right: 0.5rem;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .nav-btn {
+      background: white;
+      border: 1px solid #D0D0D0;
+      padding: 0.5rem 1.2rem;
+      border-radius: 60px;
+      font-weight: 600;
+      color: #1F1F1F;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .nav-btn:hover {
+      background: #F2C811;
+      border-color: #F2C811;
+      color: #1F1F1F;
+      transform: scale(0.97);
+    }
+
+    .nav-btn:active {
+      transform: scale(0.94);
+    }
+
+    .nav-btn.home-btn {
+      background: #1F1F1F;
+      color: white;
+      border: none;
+    }
+
+    .nav-btn.home-btn:hover {
+      background: #F2C811;
+      color: #1F1F1F;
+    }
+
+    /* responsivo */
+    @media screen and (max-width: 800px) {
+      .slide {
+        flex-direction: column;
+        padding: 1.5rem;
+        gap: 1.2rem;
+      }
+
+      .slide-image {
+        flex: 1 1 auto;
+        min-height: 200px;
+        max-height: 280px;
+      }
+
+      .slide-image img {
+        max-height: 220px;
+      }
+
+      .slide-content h2 {
+        font-size: 1.6rem;
+      }
+
+      .nav-controls {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+      }
+
+      .indicators {
+        justify-content: center;
+      }
+
+      .nav-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .slide-final h2 {
+        font-size: 2.2rem;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .slide-content h2 {
+        font-size: 1.4rem;
+      }
+      .step-badge {
+        font-size: 0.7rem;
+        padding: 0.1rem 0.8rem;
+      }
+      .badge-tip li {
+        font-size: 0.8rem;
+      }
+      .slide {
+        padding: 1rem;
+      }
+      .btn-cta {
+        padding: 0.7rem 2rem;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="carousel-wrapper">
+  <!-- barra progreso -->
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width: 6.66%;"></div>
+  </div>
+
+  <!-- contenedor de slides dinámicos -->
+  <div class="slides-container" id="slidesContainer">
+    <!-- Los slides se inyectan desde JS -->
+  </div>
+
+  <!-- navegación -->
+  <div class="nav-controls">
+    <div class="indicators">
+      <span class="step-indicator" id="stepIndicator">Paso 1 de 15</span>
+      <div id="dotsContainer" style="display: flex; gap: 8px; align-items: center;"></div>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn home-btn" id="homeBtn">Inicio</button>
+      <button class="nav-btn" id="prevBtn">Anterior</button>
+      <button class="nav-btn" id="nextBtn">Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ============================================================
+    // DATOS DE SLIDES (15)
+    // ============================================================
+    const slidesData = [
+      { title: "Bienvenido a Power BI", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide1.png", 
+        q: "Conocer Power BI como plataforma de análisis y visualización de datos. Comprender cómo transforma datos en información útil para la toma de decisiones.",
+        why: "Todo proyecto de Business Intelligence inicia entendiendo las capacidades de la herramienta.",
+        tips: ["Definir objetivos de negocio.", "Identificar indicadores clave.", "Entender quién consumirá el dashboard."] },
+      { title: "Carga de Datos desde Excel", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide2.png",
+        q: "Importar la información desde un archivo Excel para comenzar el proceso de construcción del modelo analítico.",
+        why: "Los dashboards son tan confiables como los datos que los alimentan.",
+        tips: ["Utilizar tablas estructuradas.", "Evitar celdas combinadas.", "Mantener nombres claros para columnas."] },
+      { title: "Interfaz de Power Query", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide3.png",
+        q: "Explorar el entorno de transformación de datos donde se realizan limpiezas y ajustes antes del análisis.",
+        why: "Permite garantizar calidad y consistencia de la información.",
+        tips: ["Documentar transformaciones.", "Eliminar columnas innecesarias.", "Aplicar transformaciones reutilizables."] },
+      { title: "Cambio de Tipo de Datos", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide4.png",
+        q: "Asignar correctamente tipos numéricos, fechas y textos a cada campo.",
+        why: "Los cálculos e indicadores dependen de tipos de datos correctos.",
+        tips: ["Revisar todas las columnas.", "Validar campos fecha.", "Evitar conversiones automáticas incorrectas."] },
+      { title: "Cerrar y Aplicar Cambios", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide5.png",
+        q: "Cargar al modelo los cambios realizados en Power Query.",
+        why: "Es el paso donde los datos preparados llegan al modelo analítico.",
+        tips: ["Revisar errores antes de aplicar.", "Eliminar pasos redundantes.", "Verificar tiempos de carga."] },
+      { title: "Vista del Modelo de Datos", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide6.png",
+        q: "Visualizar tablas y relaciones dentro del modelo.",
+        why: "Las relaciones permiten cruzar información correctamente.",
+        tips: ["Mantener modelos tipo estrella.", "Evitar relaciones ambiguas.", "Utilizar claves únicas."] },
+      { title: "Creación de Tabla Calendario", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide7.png",
+        q: "Crear una dimensión de fechas para análisis temporales.",
+        why: "Facilita comparativos, acumulados y análisis históricos.",
+        tips: ["Incluir año, trimestre y mes.", "Marcar como tabla de fechas.", "Utilizar una única dimensión calendario."] },
+      { title: "Creación de Medida DAX", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide8.png",
+        q: "Crear un cálculo reutilizable mediante DAX. Medida: Total_Ventas = SUM(T_ventas[precio_venta])",
+        why: "Las medidas son la base de los indicadores dinámicos.",
+        tips: ["Utilizar nombres descriptivos.", "Centralizar medidas.", "Documentar lógica compleja."] },
+      { title: "Diseño del Dashboard", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide9.png",
+        q: "Definir tamaño del lienzo, estructura visual y colores.",
+        why: "Un diseño claro acelera la interpretación del usuario.",
+        tips: ["Utilizar pocos colores.", "Priorizar legibilidad.", "Mantener consistencia visual."] },
+      { title: "Primer KPI", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide10.png",
+        q: "Mostrar el indicador Total_Ventas mediante una tarjeta.",
+        why: "Los KPIs resumen rápidamente el desempeño del negocio.",
+        tips: ["Ubicar KPIs en la parte superior.", "Resaltar métricas estratégicas.", "Evitar saturar de indicadores."] },
+      { title: "Gráfico de Línea", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide11.png",
+        q: "Visualizar la evolución de ventas a lo largo del tiempo.",
+        why: "Permite identificar tendencias y comportamientos.",
+        tips: ["Mantener escalas consistentes.", "Etiquetar correctamente.", "Evitar exceso de series."] },
+      { title: "Segmentadores de Tiempo", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide12.png",
+        q: "Agregar filtros interactivos para explorar información por fechas.",
+        why: "Mejora la experiencia de análisis del usuario.",
+        tips: ["Ubicar filtros visibles.", "Mantener diseño uniforme.", "Limitar filtros innecesarios."] },
+      { title: "Pulir el Dashboard", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide13.png",
+        q: "Optimizar distribución, títulos, navegación y elementos visuales.",
+        why: "La presentación influye directamente en la adopción del dashboard.",
+        tips: ["Alinear objetos.", "Mantener espacios en blanco.", "Crear jerarquía visual."] },
+      { title: "Publicación en Power BI Service", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide14.png",
+        q: "Publicar el dashboard en la nube para compartirlo.",
+        why: "Permite colaboración y acceso corporativo.",
+        tips: ["Verificar permisos.", "Validar actualización de datos.", "Documentar responsables."] },
+      { title: "Vista Final en Power BI Service", img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/slide15.png",
+        q: "Consumir el dashboard desde el portal web de Power BI.",
+        why: "Es donde los usuarios finales toman decisiones basadas en los datos.",
+        tips: ["Programar actualizaciones.", "Supervisar uso del reporte.", "Recoger retroalimentación de usuarios."] }
+    ];
+
+    // ============================================================
+    // ESTADO
+    // ============================================================
+    let currentIndex = 0;
+    const totalSlides = slidesData.length;
+
+    const container = document.getElementById('slidesContainer');
+    const dotsContainer = document.getElementById('dotsContainer');
+    const stepIndicator = document.getElementById('stepIndicator');
+    const progressFill = document.getElementById('progressFill');
+
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const homeBtn = document.getElementById('homeBtn');
+
+    // ============================================================
+    // RENDER SLIDES ( + slide final )
+    // ============================================================
+    function renderAll() {
+      let html = '';
+      // slides 1 .. 15
+      slidesData.forEach((s, idx) => {
+        const isActive = (idx === 0) ? 'active' : '';
+        const stepNum = idx + 1;
+        html += `
+          <div class="slide ${isActive}" data-index="${idx}">
+            <div class="slide-image">
+              <img src="${s.img}" alt="${s.title}" loading="lazy" />
+            </div>
+            <div class="slide-content">
+              <div class="step-badge">Paso ${stepNum} de ${totalSlides}</div>
+              <h2>${s.title}</h2>
+              <div class="content-block">
+                <p><strong>¿Qué estamos haciendo?</strong> ${s.q}</p>
+                <p><strong>¿Por qué es importante?</strong> ${s.why}</p>
+                <div class="badge-tip">
+                  <span>Buenas prácticas</span>
+                  <ul>
+                    ${s.tips.map(t => `<li>${t}</li>`).join('')}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      // slide final (celebracion) se añade como extra, siempre oculto hasta que se active
+      html += `
+        <div class="slide-final" data-index="${totalSlides}">
+          <div class="emoji-big">🎉</div>
+          <h2>¡Felicitaciones!</h2>
+          <p>Has recorrido el proceso completo para construir un dashboard básico en Power BI, desde la carga de datos hasta su publicación en Power BI Service.</p>
+          <button class="btn-cta" id="ctaFinalBtn">Comienza tu próximo proyecto BI</button>
+          <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #555;">✨ #PowerBI #DataAnalytics</div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+
+      // dots
+      dotsContainer.innerHTML = '';
+      for (let i = 0; i < totalSlides + 1; i++) {
+        const dot = document.createElement('button');
+        dot.className = 'dot';
+        if (i === 0) dot.classList.add('active');
+        dot.dataset.index = i;
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsContainer.appendChild(dot);
+      }
+
+      // evento CTA
+      const ctaBtn = document.getElementById('ctaFinalBtn');
+      if (ctaBtn) {
+        ctaBtn.addEventListener('click', () => {
+          alert('🚀 ¡Inicia tu próximo proyecto BI con estos pasos!');
+        });
+      }
+
+      updateUI();
+    }
+
+    // ============================================================
+    // NAVEGACIÓN
+    // ============================================================
+    function goToSlide(index) {
+      // si se pide el último (15) realmente es el slide final (index 15)
+      if (index < 0) index = 0;
+      if (index > totalSlides) index = totalSlides; // 15 = final celebration
+
+      // ocultar todos los slides y final
+      const slides = container.querySelectorAll('.slide');
+      const finalSlide = container.querySelector('.slide-final');
+      slides.forEach(s => s.classList.remove('active'));
+      if (finalSlide) finalSlide.classList.remove('active');
+
+      if (index < totalSlides) {
+        // slide normal
+        const target = container.querySelector(`.slide[data-index="${index}"]`);
+        if (target) target.classList.add('active');
+      } else {
+        // slide final
+        if (finalSlide) finalSlide.classList.add('active');
+      }
+
+      currentIndex = index;
+      updateUI();
+    }
+
+    function updateUI() {
+      // dots
+      const dots = dotsContainer.querySelectorAll('.dot');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+
+      // step indicator
+      if (currentIndex < totalSlides) {
+        stepIndicator.textContent = `Paso ${currentIndex + 1} de ${totalSlides}`;
+      } else {
+        stepIndicator.textContent = `🎯 ¡Finalizado!`;
+      }
+
+      // progress bar (0..15)
+      const progress = (currentIndex / totalSlides) * 100;
+      progressFill.style.width = `${Math.min(progress, 100)}%`;
+
+      // botones
+      prevBtn.disabled = (currentIndex === 0);
+      nextBtn.textContent = (currentIndex === totalSlides) ? '🎉 Inicio' : 'Siguiente';
+    }
+
+    // ============================================================
+    // EVENTOS
+    // ============================================================
+    function nextSlide() {
+      if (currentIndex === totalSlides) {
+        goToSlide(0);
+      } else {
+        goToSlide(currentIndex + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentIndex > 0) goToSlide(currentIndex - 1);
+    }
+
+    function goHome() {
+      goToSlide(0);
+    }
+
+    // asignar eventos
+    nextBtn.addEventListener('click', nextSlide);
+    prevBtn.addEventListener('click', prevSlide);
+    homeBtn.addEventListener('click', goHome);
+
+    // teclado: flechas
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); nextSlide(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+      if (e.key === 'Home') { e.preventDefault(); goHome(); }
+    });
+
+    // ============================================================
+    // INICIO
+    // ============================================================
+    renderAll();
+    goToSlide(0);
+  })();
+</script>
+
+</body>
+</html>
