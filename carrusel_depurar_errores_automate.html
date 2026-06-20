@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depuración y Corrección de Expresiones en Power Automate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #005a9e;
+            --primary-light: #e1dfdd;
+            --bg-gradient: linear-gradient(135deg, #f3f2f1 0%, #edebe9 100%);
+            --card-bg: #ffffff;
+            --text-main: #323130;
+            --text-muted: #605e5c;
+            --error: #a80000;
+            --error-bg: #fde7e9;
+            --success: #107c41;
+            --success-bg: #dff6dd;
+            --warning: #7a7574;
+            --code-bg: #f3f2f1;
+            --radius: 8px;
+            --shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        /* TAMAÑO MÁS COMPACTO */
+        .carousel-container {
+            width: 100%;
+            max-width: 880px; /* Reducido de 1050px a 880px */
+            height: 540px;    /* Reducido de 650px a 540px */
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .carousel-track {
+            display: flex;
+            height: calc(100% - 60px);
+            width: 100%;
+            transition: var(--transition);
+        }
+
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            padding: 25px 45px; /* Reducido el padding interno */
+            overflow-y: auto;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        /* Tipografía y Títulos adaptados al tamaño compacto */
+        h1 {
+            font-size: 1.9rem;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #f3f2f1;
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        /* Componentes de Navegación */
+        .controls {
+            height: 60px;
+            border-top: 1px solid #edebe9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            background: #faf9f8;
+            z-index: 10;
+        }
+
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .nav-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .nav-btn:disabled {
+            background: var(--primary-light);
+            color: #a19f9d;
+            cursor: not-allowed;
+        }
+
+        /* Botón de Inicio Estilizado */
+        .home-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid #c8c6c4;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .home-btn:hover {
+            background: #f3f2f1;
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .pagination {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #c8c6c4;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .dot.active {
+            background: var(--primary);
+            width: 20px;
+            border-radius: 4px;
+        }
+
+        /* Grillas y Tarjetas Compactas */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 5px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 5px;
+        }
+
+        .card {
+            background: #faf9f8;
+            border: 1px solid #edebe9;
+            border-radius: var(--radius);
+            padding: 15px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border-color: var(--primary);
+        }
+
+        .card.error-card { border-left: 4px solid var(--error); }
+        .card.success-card { border-left: 4px solid var(--success); }
+
+        /* Bloques de Código */
+        code {
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #a80000;
+            font-size: 0.85rem;
+        }
+
+        .code-block {
+            display: block;
+            background: #252423;
+            color: #f3f2f1;
+            padding: 10px 14px;
+            border-radius: 5px;
+            margin: 8px 0;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        .code-block code {
+            background: transparent;
+            color: #f3f2f1;
+            padding: 0;
+        }
+
+        /* Iconos */
+        .icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .icon-large {
+            width: 36px;
+            height: 36px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        /* Flujo Paso a Paso */
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            position: relative;
+        }
+
+        .steps-container::before {
+            content: '';
+            position: absolute;
+            top: 22px;
+            left: 5%;
+            width: 90%;
+            height: 2px;
+            background: #edebe9;
+            z-index: 1;
+        }
+
+        .step-item {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 22%;
+        }
+
+        .step-number {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            transition: var(--transition);
+        }
+
+        .step-item:hover .step-number {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Tabla Comparativa */
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .comp-table th, .comp-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #edebe9;
+        }
+
+        .comp-table th {
+            background: #faf9f8;
+            font-weight: 600;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: #faf9f8;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .checklist-item:hover { background: #f3f2f1; }
+
+        .checklist-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .checklist-item.checked {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        /* Portada Estilos */
+        .cover-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at 90% 10%, #e6f2ff 0%, #ffffff 60%);
+        }
+
+        .cover-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            background: #0078d4;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 120, 212, 0.25);
+        }
+
+        .badge {
+            background: #e1dfdd;
+            color: var(--text-main);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .carousel-container {
+                height: auto;
+                min-height: 520px;
+            }
+            .slide {
+                padding: 20px;
+            }
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            .steps-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .steps-container::before {
+                display: none;
+            }
+            .step-item {
+                width: 100%;
+                flex-direction: row;
+                text-align: left;
+                gap: 12px;
+            }
+            .step-number {
+                margin-bottom: 0;
+                width: 36px;
+                height: 36px;
+                font-size: 0.95rem;
+            }
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="carousel-container">
+        <div class="carousel-track" id="track">
+
+            <div class="slide active cover-slide">
+                <div class="cover-logo">
+                    <svg class="icon" style="width:45px; height:45px;" viewBox="0 0 24 24"><path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3zM8 13h2.55v3h2.9v-3H16l-4-4z"/></svg>
+                </div>
+                <span class="badge">MICROSOFT POWER AUTOMATE</span>
+                <h1>Depuración y Corrección de Expresiones</h1>
+                <p style="max-width: 550px; font-size: 1rem; margin-top: 5px;">Guía práctica y metodológica para identificar, analizar, solucionar y prevenir errores comunes dentro de sus flujos automatizados.</p>
+            </div>
+
+            <div class="slide">
+                <h2>
+                    <svg class="icon" style="color:var(--error);" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    Identificar el Tipo de Error
+                </h2>
+                <p>Antes de corregir una expresión, es fundamental catalogar el momento y la naturaleza de la falla. Los errores se dividen principalmente en dos etapas:</p>
+                
+                <div class="grid-2">
+                    <div class="card error-card">
+                        <h3>1. Errores de Diseño (Compilación)</h3>
+                        <p>Ocurren mientras editas el flujo. El diseñador detecta problemas de sintaxis impidiendo guardar el proceso.</p>
+                        <p><strong>Ejemplo:</strong> <code>InvalidTemplate</code>. Ocurre al escribir mal una función o faltar paréntesis.</p>
+                    </div>
+                    <div class="card error-card">
+                        <h3>2. Errores en Tiempo de Ejecución</h3>
+                        <p>El flujo se guarda correctamente, pero falla al procesar datos reales debido a nulos o incompatibilidades operativas.</p>
+                        <p><strong>Ejemplo:</strong> <code>ExpressionEvaluationFailed</code>. Se intenta leer un nodo JSON inexistente.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>
+                    <svg class="icon" style="color:var(--primary);" viewBox="0 0 24 24"><path fill="currentColor" d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5.1-2.4-7.5-1.3L8 5.2 5.2 8 1.7 4.5C.6 6.9 1 10 3 12c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.4-.4.4-1 0-1.3z"/></svg>
+                    Herramientas de Depuración Integradas
+                </h2>
+                <p>Microsoft suministra múltiples utilidades nativas para inspeccionar el comportamiento de las expresiones.</p>
+                
+                <div class="grid-3">
+                    <div class="card">
+                        <svg class="icon icon-large" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                        <h4>Editor de Expresiones</h4>
+                        <p style="font-size:0.8rem; margin-top:3px;">Valida la sintaxis en tiempo real, asiste con autocompletado y resalta fallos.</p>
+                    </div>
+                    <div class="card">
+                        <svg class="icon icon-large" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2m1 17h-2v-2h2v2m2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41a2 2 0 0 0-2-2 2 2 0 0 0-2 2H7a5 5 0 0 1 5-5 5 5 0 0 1 5 5c0 .88-.36 1.68-.93 2.25z"/></svg>
+                        <h4>Copilot / IA</h4>
+                        <p style="font-size:0.8rem; margin-top:3px;">Permite describir la corrección requerida en lenguaje natural y genera la sintaxis limpia.</p>
+                    </div>
+                    <div class="card">
+                        <svg class="icon icon-large" viewBox="0 0 24 24"><path fill="currentColor" d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+                        <h4>Historial</h4>
+                        <p style="font-size:0.8rem; margin-top:3px;">Expone detalladamente los bloques JSON exactos de entrada y salida de cada acción.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>
+                    <svg class="icon" style="color:var(--primary);" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    Metodología de Análisis de Errores
+                </h2>
+                <p>Frente a un fallo crítico, siga esta secuencia estructurada paso a paso para diagnosticar la raíz del problema rápidamente:</p>
+                
+                <div class="steps-container">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div>
+                            <h4>Inputs/Outputs</h4>
+                            <p style="font-size:0.75rem;">Abra la acción e inspeccione los payloads JSON.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div>
+                            <h4>Validar Datos</h4>
+                            <p style="font-size:0.75rem;">Compare tipo recibido contra el esperado.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div>
+                            <h4>Detectar Nulos</h4>
+                            <p style="font-size:0.75rem;">Verifique si campos obligatorios llegaron vacíos.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">4</div>
+                        <div>
+                            <h4>Rastrear Origen</h4>
+                            <p style="font-size:0.75rem;">Analice si flujos previos mutaron el dato.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>
+                    <svg class="icon" style="color:var(--success);" viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    Defensa contra Nulos con empty()
+                </h2>
+                <p>Procesar colecciones o textos vacíos con funciones como <code>first()</code> causa una excepción fatal. La función <code>empty()</code> previene esto evaluando la existencia previa de los datos.</p>
+                
+                <div class="card success-card" style="margin-bottom:10px;">
+                    <h3>Sintaxis Defensiva Recomendada:</h3>
+                    <div class="code-block">
+                        <code>if(empty(variables('lista')), null, first(variables('lista')))</code>
+                    </div>
+                </div>
+                
+                <h4>¿Por qué evita interrupciones?</h4>
+                <p>Evalúa de forma booleana. Si el objeto está vacío, devuelve inmediatamente un valor controlado alternativo (como <code>null</code>) en lugar de intentar ejecutar la función principal en el vacío.</p>
+            </div>
+
+            <div class="slide">
+                <h2>
+                    <svg class="icon" style="color:var(--primary);" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    El Operador de Navegación Segura <code>?.</code>
+                </h2>
+                <p>Si un nodo o propiedad JSON raíz no viene en la respuesta, el motor rompe el flujo. La notación segura absorbe la ausencia de campos devolviendo un estado nulo controlado.</p>
+
+                <table class="comp-table">
+                    <thead>
+                        <tr>
+                            <th>Método de Acceso</th>
+                            <th>Ejemplo de Expresión</th>
+                            <th>Resultado si no existe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Estándar (Inseguro)</strong></td>
+                            <td><code>triggerBody()['Contacto']['Telefono']</code></td>
+                            <td><span style="color:var(--error); font-weight:600;">Fallo (Rompe el flujo)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Seguro (Recomendado)</strong></td>
+                            <td><code>triggerBody()?['Contacto']?['Telefono']</code></td>
+                            <td><span style="color:var(--success); font-weight:600;">Exitoso: Devuelve Null</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="slide">
+                <h2>
+                    <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg>
+                    Conversión Explícita de Tipos (Casting)
+                </h2>
+                <p>Power Automate rechaza realizar operaciones lógicas si los tipos no coinciden (ej. intentar validar el texto de un número <code>"5"</code> contra un entero <code>5</code>).</p>
+                
+                <div class="grid-2">
+                    <div class="card">
+                        <h4>Funciones Clave</h4>
+                        <p style="font-size:0.85rem; margin-bottom:4px;">• <code>int()</code>: Texto a números enteros.</p>
+                        <p style="font-size:0.85rem; margin-bottom:4px;">• <code>float()</code>: Texto a decimales.</p>
+                        <p style="font-size:0.85rem; margin-bottom:4px;">• <code>string()</code>: Convierte objetos a texto.</p>
+                        <p style="font-size:0.85rem;">• <code>parseDateTime()</code>: Texto a Formato Fecha.</p>
+                    </div>
+                    <div class="card">
+                        <h4>Caso Práctico</h4>
+                        <div class="code-block" style="margin:2px 0;">
+<code>// Incorrecto (Falla si id es texto):
+greater(triggerBody()?['id'], 100)
+
+// Solución Correcta:
+greater(int(triggerBody()?['id']), 100)</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>
+                    <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12.75 3h-1.5L6.5 14h1.75l1.12-3h5.25l1.12 3h1.75L12.75 3zm-2.62 6.5L12 4.67 13.87 9.5h-3.74zM20 18H4v-2h16v2z"/></svg>
+                    Manipulación String y Sensibilidad de Texto
+                </h2>
+                <p>Las funciones de comparación de cadenas de texto como <code>contains()</code> o <code>equals()</code> son <strong>estrictamente sensibles a mayúsculas y minúsculas (Case-Sensitive)</strong>.</p>
+                
+                <div class="card" style="background:#f3f2f1; border-left:4px solid var(--primary); padding: 12px;">
+                    <h4>Estandarización Preventiva</h4>
+                    <p>Para asegurar la coincidencia sin importar cómo escribió el usuario, convierta siempre los valores de los extremos a minúsculas usando la función <code>toLower()</code>.</p>
+                    <div class="code-block" style="margin-bottom:0;">
+                        <code>contains(toLower(triggerBody()?['correo']), 'aprobado')</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h2>
+                    <svg class="icon" style="color:var(--success);" viewBox="0 0 24 24"><path fill="currentColor" d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/></svg>
+                    Checklist de Producción Completa
+                </h2>
+                <p>Implemente esta verificación técnica e interactiva antes de pasar cualquier flujo de Power Automate a entornos de producción:</p>
+                
+                <ul class="checklist">
+                    <li class="checklist-item" onclick="toggleCheck(this)">
+                        <input type="checkbox">
+                        <span>¿He envuelto las llamadas dinámicas con el operador de navegación segura <code>?</code>?</span>
+                    </li>
+                    <li class="checklist-item" onclick="toggleCheck(this)">
+                        <input type="checkbox">
+                        <span>¿Usé la función <code>empty()</code> en arreglos opcionales para prevenir fallas fatales?</span>
+                    </li>
+                    <li class="checklist-item" onclick="toggleCheck(this)">
+                        <input type="checkbox">
+                        <span>¿He tipificado explícitamente mediante <code>int()</code> o <code>string()</code> los campos de comparación?</span>
+                    </li>
+                    <li class="checklist-item" onclick="toggleCheck(this)">
+                        <input type="checkbox">
+                        <span>¿He aplicado <code>toLower()</code> en condiciones para anular la sensibilidad a mayúsculas?</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="slide cover-slide">
+                <div class="cover-logo" style="background:var(--success); box-shadow: 0 8px 20px rgba(16,124,65,0.25); margin-bottom:10px;">
+                    <svg class="icon" style="width:45px; height:45px;" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <h2>¡Flujos Robustos e Ininterrumpidos!</h2>
+                <p style="max-width:580px; margin-bottom:12px;">La depuración metódica convierte errores imprevistos en simples comportamientos controlados dentro del diseño de la solución.</p>
+                <div class="card" style="max-width:500px; border-top:4px solid var(--success); text-align:left; padding: 12px;">
+                    <p style="margin-bottom:0; font-weight:600; color:var(--text-main);">Mantra Pro-Dev en Power Automate:</p>
+                    <p style="font-style:italic; margin-top:3px; font-size:0.9rem;">"No asuma que el dato siempre llegará completo; diseñe su lógica blindando la expresión contra la ausencia del mismo."</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <div class="nav-group">
+                <button class="nav-btn" id="prevBtn" disabled>
+                    <svg class="icon" viewBox="0 0 24 24" style="transform:rotate(180deg);"><path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                    Anterior
+                </button>
+            </div>
+            
+            <div class="nav-group">
+                <button class="home-btn" id="homeBtn" title="Ir al Inicio / Portada">
+                    <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                </button>
+                <div class="pagination" id="pagination"></div>
+            </div>
+            
+            <div class="nav-group">
+                <button class="nav-btn" id="nextBtn">
+                    Siguiente
+                    <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const track = document.getElementById('track');
+        const slides = Array.from(track.children);
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const homeBtn = document.getElementById('homeBtn');
+        const pagination = document.getElementById('pagination');
+        
+        let currentIndex = 0;
+
+        // Inicializar Paginación Dinámica
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if(index === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goToSlide(index));
+            pagination.appendChild(dot);
+        });
+
+        const dots = Array.from(pagination.children);
+
+        function updateCarousel() {
+            // Desplazamiento de pista
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            
+            // Gestionar clases activas
+            slides.forEach((slide, idx) => {
+                if(idx === currentIndex) {
+                    slide.classList.add('active');
+                    slide.scrollTop = 0; // Reinicia el scroll superior al cambiar de slide
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            // Actualizar estado de botones
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === slides.length - 1;
+
+            // Actualizar indicadores (dots)
+            dots.forEach((dot, idx) => {
+                if(idx === currentIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        function goToSlide(index) {
+            currentIndex = index;
+            updateCarousel();
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if(currentIndex < slides.length - 1) {
+                currentIndex++;
+                updateCarousel();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if(currentIndex > 0) {
+                currentIndex--;
+                updateCarousel();
+            }
+        });
+
+        // Evento para el nuevo botón de Ir al Inicio (Slide 0)
+        homeBtn.addEventListener('click', () => {
+            goToSlide(0);
+        });
+
+        // Interacción para el checklist de la diapositiva 9
+        function toggleCheck(element) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            if(checkbox.checked) {
+                element.classList.add('checked');
+            } else {
+                element.classList.remove('checked');
+            }
+        }
+
+        document.querySelectorAll('.checklist-item input').forEach(input => {
+            input.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const parent = e.target.parentElement;
+                if(e.target.checked) {
+                    parent.classList.add('checked');
+                } else {
+                    parent.classList.remove('checked');
+                }
+            });
+        });
+
+        // Soporte de navegación por teclado
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowRight' && currentIndex < slides.length - 1) {
+                currentIndex++;
+                updateCarousel();
+            } else if(e.key === 'ArrowLeft' && currentIndex > 0) {
+                currentIndex--;
+                updateCarousel();
+            } else if(e.key === 'Home') {
+                goToSlide(0);
+            }
+        });
+    </script>
+</body>
+</html>
