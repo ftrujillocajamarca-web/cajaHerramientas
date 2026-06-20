@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flujo de aprobación · SharePoint + Power Automate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #f2f5f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    .carousel-wrapper {
+      max-width: 1280px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 32px;
+      box-shadow: 0 20px 40px -12px rgba(0, 20, 40, 0.25);
+      overflow: hidden;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #e6edf4;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #0d6efd;
+      transition: width 0.5s ease;
+    }
+
+    .slides-container {
+      position: relative;
+      min-height: 500px;
+      background: white;
+    }
+
+    .slide {
+      display: none;
+      flex-direction: row;
+      align-items: stretch;
+      padding: 2rem 2.2rem 2rem 2.2rem;
+      gap: 2rem;
+      animation: fadeSlide 0.45s ease;
+      min-height: 440px;
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes fadeSlide {
+      0% { opacity: 0.3; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-image {
+      flex: 0 0 60%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8faff;
+      border-radius: 24px;
+      box-shadow: 0 6px 18px rgba(0, 40, 80, 0.06);
+      overflow: hidden;
+      min-height: 280px;
+    }
+
+    .slide-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      max-height: 400px;
+    }
+
+    .slide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.25rem;
+      padding: 0.1rem 0;
+    }
+
+    .step-badge {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #0d6efd;
+      background: #e9f0fa;
+      display: inline-block;
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      letter-spacing: 0.2px;
+      align-self: flex-start;
+      margin-bottom: 0.2rem;
+    }
+
+    .slide-content h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #0b1a2e;
+      line-height: 1.2;
+      margin: 0.1rem 0 0.2rem 0;
+      letter-spacing: -0.02em;
+    }
+
+    .content-block p {
+      font-size: 0.95rem;
+      color: #1e2f44;
+      line-height: 1.5;
+      margin-bottom: 0.1rem;
+    }
+
+    .content-block strong {
+      color: #0b1a2e;
+      font-weight: 600;
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .badge-tip {
+      background: #f0f6ff;
+      border-left: 4px solid #0d6efd;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      margin: 0.5rem 0 0.1rem 0;
+    }
+
+    .badge-tip span {
+      font-weight: 700;
+      color: #0b1a2e;
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 0.1rem;
+    }
+
+    .badge-tip ul {
+      list-style: none;
+      margin-top: 0.1rem;
+    }
+
+    .badge-tip li {
+      font-size: 0.9rem;
+      color: #1e2f44;
+      padding: 0.1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .badge-tip li::before {
+      content: "✓";
+      color: #0d6efd;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .highlight-box {
+      background: #f2f8ff;
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+      border: 1px solid #d9e6f2;
+    }
+
+    .highlight-box code {
+      background: #ffffff;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-weight: 500;
+      color: #0d6efd;
+    }
+
+    /* slide final celebración */
+    .slide-final {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2.5rem 2rem;
+      gap: 1.2rem;
+      min-height: 400px;
+    }
+
+    .slide-final.active {
+      display: flex;
+    }
+
+    .slide-final h2 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #0b1a2e;
+    }
+
+    .slide-final .emoji-big {
+      font-size: 4.2rem;
+    }
+
+    .slide-final p {
+      max-width: 560px;
+      color: #1e2f44;
+      font-size: 1.2rem;
+      line-height: 1.5;
+    }
+
+    .btn-cta {
+      background: #0d6efd;
+      border: none;
+      padding: 0.9rem 2.8rem;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: white;
+      box-shadow: 0 6px 0 #0a58ca;
+      transition: 0.15s ease;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      letter-spacing: 0.3px;
+      border: 1px solid #0a58ca;
+    }
+
+    .btn-cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 0 #084298;
+      background: #0b5ed7;
+    }
+
+    /* navegación */
+    .nav-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem 1.5rem 2rem;
+      background: white;
+      border-top: 1px solid #e6edf4;
+    }
+
+    .indicators {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      background: #cbdae8;
+      border-radius: 40px;
+      transition: 0.2s ease;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background: #0d6efd;
+      width: 28px;
+    }
+
+    .step-indicator {
+      font-weight: 500;
+      color: #0b1a2e;
+      background: #eef4fa;
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      margin-right: 0.5rem;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .nav-btn {
+      background: white;
+      border: 1px solid #cbdae8;
+      padding: 0.5rem 1.2rem;
+      border-radius: 60px;
+      font-weight: 600;
+      color: #0b1a2e;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .nav-btn:hover {
+      background: #0d6efd;
+      border-color: #0d6efd;
+      color: white;
+      transform: scale(0.97);
+    }
+
+    .nav-btn.home-btn {
+      background: #0b1a2e;
+      color: white;
+      border: none;
+    }
+
+    .nav-btn.home-btn:hover {
+      background: #0d6efd;
+      color: white;
+    }
+
+    @media screen and (max-width: 800px) {
+      .slide {
+        flex-direction: column;
+        padding: 1.5rem;
+        gap: 1.2rem;
+      }
+      .slide-image {
+        flex: 1 1 auto;
+        min-height: 180px;
+        max-height: 240px;
+      }
+      .slide-image img {
+        max-height: 200px;
+      }
+      .slide-content h2 {
+        font-size: 1.6rem;
+      }
+      .nav-controls {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+      }
+      .indicators {
+        justify-content: center;
+      }
+      .nav-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .slide-final h2 {
+        font-size: 2.2rem;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .slide-content h2 {
+        font-size: 1.3rem;
+      }
+      .step-badge {
+        font-size: 0.7rem;
+      }
+      .badge-tip li {
+        font-size: 0.8rem;
+      }
+      .slide {
+        padding: 1rem;
+      }
+      .btn-cta {
+        padding: 0.7rem 2rem;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="carousel-wrapper">
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+  </div>
+
+  <div class="slides-container" id="slidesContainer"></div>
+
+  <div class="nav-controls">
+    <div class="indicators">
+      <span class="step-indicator" id="stepIndicator">Paso 1 de 12</span>
+      <div id="dotsContainer" style="display: flex; gap: 8px; align-items: center;"></div>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn home-btn" id="homeBtn">Inicio</button>
+      <button class="nav-btn" id="prevBtn">Anterior</button>
+      <button class="nav-btn" id="nextBtn">Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ============================================================
+    // DATOS – Flujo de aprobación: SharePoint → correo
+    // ============================================================
+    const slidesData = [
+      { title: "Escenario: solicitud de aprobación", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide1.png",
+        q: "Cuando se crea un nuevo elemento en una lista de SharePoint (por ejemplo, una solicitud de compra o documento), queremos que se envíe automáticamente un correo pidiendo aprobación a un responsable.",
+        why: "Automatizar este flujo ahorra tiempo, evita olvidos y garantiza que cada solicitud siga el proceso establecido.",
+        tips: ["Identifica claramente quién debe aprobar cada tipo de solicitud.", "Define la información mínima que debe tener el correo (quién solicita, qué, por qué).", "Asegúrate de que el remitente del correo sea reconocible."] },
+      { title: "Acceso a Power Automate", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide2.png",
+        q: "Ingresa a Power Automate desde el portal de Microsoft 365 o directamente en make.powerautomate.com. Busca 'Flujos' y selecciona 'Crear flujo automatizado'.",
+        why: "Power Automate es la herramienta que conecta SharePoint con el correo y otros servicios sin necesidad de código.",
+        tips: ["Usa tu cuenta corporativa con permisos adecuados.", "Ten abierta la lista de SharePoint para copiar nombres de columnas fácilmente.", "Explora la pestaña 'Mis flujos' para ver ejemplos anteriores."] },
+      { title: "Disparador: 'Cuando se crea un elemento'", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide3.png",
+        q: "Selecciona el conector de SharePoint y elige el disparador 'Cuando se crea un elemento'. Luego, indica la dirección del sitio y el nombre de la lista que activará el flujo.",
+        why: "Este disparador se ejecuta automáticamente cada vez que se agrega un nuevo elemento a la lista, justo lo que necesitamos.",
+        tips: ["Verifica que la URL del sitio sea correcta.", "Escribe el nombre de la lista exactamente como aparece.", "Puedes probar con un elemento de muestra para verificar la conexión."] },
+      { title: "Obtener detalles del elemento (opcional)", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide4.png",
+        q: "Agrega la acción 'Obtener elemento' para recuperar todos los campos de la solicitud recién creada. Esto te permitirá usar esos datos en el correo.",
+        why: "Necesitamos incluir información como el solicitante, descripción y monto en el correo para que el aprobador tenga contexto.",
+        tips: ["Usa el ID del elemento que viene del disparador.", "Es una buena práctica asignar un nombre legible a esta acción (ej: 'Obtener solicitud completa').", "Verifica que todos los campos que usarás estén disponibles."] },
+      { title: "Iniciar y esperar una aprobación", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide5.png",
+        q: "Añade la acción 'Iniciar y esperar una aprobación' (tipo 'Aprobar/Rechazar'). Asigna el asunto y mensaje del correo, y define quién debe aprobar (puede ser una persona o grupo).",
+        why: "Esta acción envía el correo de solicitud y espera la respuesta del aprobador, pausando el flujo hasta que se decida.",
+        tips: ["En el asunto, incluye un identificador como 'Solicitud #{ID}' para facilitar el seguimiento.", "Personaliza el mensaje con los datos del elemento (usa el botón 'Agregar contenido dinámico').", "Define un tiempo de espera razonable (ej: 7 días) para no bloquear el flujo."] },
+      { title: "Personalizar el correo de aprobación", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide6.png",
+        q: "Diseña el cuerpo del correo con HTML simple o texto enriquecido. Incluye los campos más relevantes: solicitante, fecha, descripción y enlace directo al elemento en SharePoint.",
+        why: "Un correo claro y completo aumenta la probabilidad de que el aprobador entienda la solicitud y decida rápidamente.",
+        tips: ["Usa viñetas para hacer la lectura más ágil.", "Añade un enlace al elemento: 'Ver solicitud en SharePoint' con la URL dinámica.", "Incluye el nombre del solicitante y su área para dar contexto."] },
+      { title: "Condición: ¿aprobado o rechazado?", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide7.png",
+        q: "Después de la acción de aprobación, agrega una condición que evalúe la respuesta: si 'Aprobado' o 'Rechazado'. Cada rama ejecutará acciones diferentes.",
+        why: "Así podemos notificar al solicitante del resultado y, si es aprobado, actualizar el estado del elemento en SharePoint.",
+        tips: ["Usa la salida 'Resultado de la aprobación' para la condición.", "En la rama de aprobado, considera actualizar un campo 'Estado' a 'Aprobado'.", "En la rama de rechazado, envía un correo explicativo al solicitante."] },
+      { title: "Actualizar elemento en SharePoint (aprobado)", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide8.png",
+        q: "En la rama 'Sí' de la condición, añade la acción 'Actualizar elemento' de SharePoint para modificar el campo 'Estado' (o similar) a 'Aprobado' y registrar la fecha de aprobación.",
+        why: "Mantener la lista de SharePoint sincronizada es clave para que todos los involucrados vean el estado actual de cada solicitud.",
+        tips: ["Actualiza al menos el campo de estado.", "También puedes guardar el nombre del aprobador y la fecha de respuesta.", "Verifica que el ID del elemento sea el correcto (usa el mismo que obtuviste al inicio)."] },
+      { title: "Enviar correo al solicitante (resultado)", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide9.png",
+        q: "Agrega una acción 'Enviar un correo electrónico' (de Outlook o Gmail) para notificar al solicitante del resultado de su solicitud.",
+        why: "La transparencia y la comunicación oportuna mejoran la experiencia de los usuarios y evitan incertidumbre.",
+        tips: ["Personaliza el mensaje según sea aprobado o rechazado.", "Incluye un agradecimiento y, en caso de rechazo, motivos o comentarios del aprobador.", "Usa la dirección de correo del solicitante (campo 'Creador' o 'Correo') como destinatario."] },
+      { title: "Prueba y depuración", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide10.png",
+        q: "Guarda el flujo y prueba creando un elemento en la lista de SharePoint. Observa cómo se ejecuta paso a paso en el historial de ejecuciones de Power Automate.",
+        why: "Las pruebas son fundamentales para detectar errores de configuración, campos incorrectos o permisos insuficientes antes de ponerlo en producción.",
+        tips: ["Usa elementos de prueba con datos de ejemplo.", "Revisa el historial de ejecuciones para ver cada paso y sus entradas/salidas.", "Si falla, lee el mensaje de error; suele indicar exactamente qué está mal."] },
+      { title: "Ajustes finales y buenas prácticas", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide11.png",
+        q: "Revisa los nombres de las acciones, añade comentarios en el flujo y asegúrate de que los correos tengan un diseño uniforme y profesional.",
+        why: "Un flujo bien documentado y ordenado es más fácil de mantener y compartir con el equipo.",
+        tips: ["Agrupa acciones con 'Ámbito' para organizar visualmente.", "Añade descripciones en cada acción para futuras modificaciones.", "Considera manejar excepciones (por ejemplo, si no se encuentra el aprobador)."] },
+      { title: "Publicar y monitorear", 
+        img: "https://raw.githubusercontent.com/ftrujillocajamarca-web/cajaHerramientas/main/paa_slide12.png",
+        q: "Activa el flujo (se activa por defecto al guardar) y comienza a usarlo en el día a día. Supervisa las ejecuciones desde el panel de Power Automate.",
+        why: "La automatización está lista para ahorrar tiempo a tu equipo y garantizar que cada solicitud pase por el proceso de aprobación.",
+        tips: ["Programa un recordatorio semanal para revisar ejecuciones fallidas.", "Solicita retroalimentación a los usuarios para mejorar los correos.", "Ajusta el flujo si cambian los requisitos del negocio."] }
+    ];
+
+    // ============================================================
+    // ESTADO
+    // ============================================================
+    let currentIndex = 0;
+    const totalSlides = slidesData.length;
+
+    const container = document.getElementById('slidesContainer');
+    const dotsContainer = document.getElementById('dotsContainer');
+    const stepIndicator = document.getElementById('stepIndicator');
+    const progressFill = document.getElementById('progressFill');
+
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const homeBtn = document.getElementById('homeBtn');
+
+    // ============================================================
+    // RENDER
+    // ============================================================
+    function renderAll() {
+      let html = '';
+      slidesData.forEach((s, idx) => {
+        const activeClass = (idx === 0) ? 'active' : '';
+        const stepNum = idx + 1;
+        html += `
+          <div class="slide ${activeClass}" data-index="${idx}">
+            <div class="slide-image">
+              <img src="${s.img}" alt="${s.title}" loading="lazy" />
+            </div>
+            <div class="slide-content">
+              <div class="step-badge">Paso ${stepNum} de ${totalSlides}</div>
+              <h2>${s.title}</h2>
+              <div class="content-block">
+                <p><strong>📌 ¿Qué estamos haciendo?</strong> ${s.q}</p>
+                <p><strong>💡 ¿Por qué es importante?</strong> ${s.why}</p>
+                <div class="badge-tip">
+                  <span>✅ Buenas prácticas</span>
+                  <ul>
+                    ${s.tips.map(t => `<li>${t}</li>`).join('')}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      // slide final de celebración
+      html += `
+        <div class="slide-final" data-index="${totalSlides}">
+          <div class="emoji-big">🎉</div>
+          <h2>¡Flujo listo!</h2>
+          <p>Has creado un flujo automatizado que envía correos de aprobación cada vez que se crea un elemento en SharePoint. ¡Ahora tus procesos son más ágiles y transparentes!</p>
+          <button class="btn-cta" id="ctaFinalBtn">🚀 Aplicar en tu proyecto</button>
+          <div style="margin-top: 0.4rem; font-size: 0.9rem; color: #4a6479;">#PowerAutomate #SharePoint #SinCódigo</div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+
+      // dots (12 normales + 1 final)
+      dotsContainer.innerHTML = '';
+      for (let i = 0; i < totalSlides + 1; i++) {
+        const dot = document.createElement('button');
+        dot.className = 'dot';
+        if (i === 0) dot.classList.add('active');
+        dot.dataset.index = i;
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsContainer.appendChild(dot);
+      }
+
+      const ctaBtn = document.getElementById('ctaFinalBtn');
+      if (ctaBtn) {
+        ctaBtn.addEventListener('click', () => {
+          alert('¡Excelente! Ahora puedes adaptar este flujo a tu propia lista de SharePoint y necesidades de aprobación.');
+        });
+      }
+
+      updateUI();
+    }
+
+    // ============================================================
+    // NAVEGACIÓN
+    // ============================================================
+    function goToSlide(index) {
+      if (index < 0) index = 0;
+      if (index > totalSlides) index = totalSlides;
+
+      const slides = container.querySelectorAll('.slide');
+      const finalSlide = container.querySelector('.slide-final');
+      slides.forEach(s => s.classList.remove('active'));
+      if (finalSlide) finalSlide.classList.remove('active');
+
+      if (index < totalSlides) {
+        const target = container.querySelector(`.slide[data-index="${index}"]`);
+        if (target) target.classList.add('active');
+      } else {
+        if (finalSlide) finalSlide.classList.add('active');
+      }
+
+      currentIndex = index;
+      updateUI();
+    }
+
+    function updateUI() {
+      const dots = dotsContainer.querySelectorAll('.dot');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+
+      if (currentIndex < totalSlides) {
+        stepIndicator.textContent = `Paso ${currentIndex + 1} de ${totalSlides}`;
+      } else {
+        stepIndicator.textContent = '🎯 ¡Completado!';
+      }
+
+      const progress = (currentIndex / totalSlides) * 100;
+      progressFill.style.width = `${Math.min(progress, 100)}%`;
+
+      prevBtn.disabled = (currentIndex === 0);
+      nextBtn.textContent = (currentIndex === totalSlides) ? '🏁 Inicio' : 'Siguiente';
+    }
+
+    // ============================================================
+    // EVENTOS
+    // ============================================================
+    function nextSlide() {
+      if (currentIndex === totalSlides) {
+        goToSlide(0);
+      } else {
+        goToSlide(currentIndex + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentIndex > 0) goToSlide(currentIndex - 1);
+    }
+
+    function goHome() {
+      goToSlide(0);
+    }
+
+    nextBtn.addEventListener('click', nextSlide);
+    prevBtn.addEventListener('click', prevSlide);
+    homeBtn.addEventListener('click', goHome);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); nextSlide(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+      if (e.key === 'Home') { e.preventDefault(); goHome(); }
+    });
+
+    // ============================================================
+    // INICIO
+    // ============================================================
+    renderAll();
+    goToSlide(0);
+  })();
+</script>
+
+</body>
+</html>
