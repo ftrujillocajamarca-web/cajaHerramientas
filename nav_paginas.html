@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Componente Carrusel UI Compacto: Botones Power BI</title>
+    <style>
+        /* --- VARIABLES DE DISEÑO (Fieles a Power BI Desktop) --- */
+        :root {
+            --primary-color: #F2C811; /* Amarillo Power BI */
+            --primary-dark: #D9B20F;
+            --pbi-grey-bg: #EAEAEA; 
+            --pbi-ribbon-gray: #F3F2F1;
+            --pbi-blue-accent: #118DFF; 
+            --text-main: #252423;
+            --text-muted: #605E5C;
+            --bg-card: #FFFFFF;
+            --border-color: #D2D0CE;
+            --accent-blue: #0078D4; 
+            --shadow-sm: 0 1.6px 3.6px 0 rgba(0,0,0,0.1), 0 0.3px 0.9px 0 rgba(0,0,0,0.08);
+            --shadow-md: 0 6.4px 14.4px 0 rgba(0,0,0,0.1), 0 1.2px 3.6px 0 rgba(0,0,0,0.08);
+            --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: #F3F2F1;
+            color: var(--text-main);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            padding: 10px; /* Reducido espacio gris exterior al mínimo */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .edu-module-wrapper {
+            width: 100%;
+            max-width: 760px; /* Reducido un poco más el ancho */
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Más compacto */
+        }
+
+        .module-header {
+            text-align: center;
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            color: #FFFFFF;
+            padding: 15px; /* Más ajustado */
+            border-radius: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .module-header h1 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+
+        .module-header p {
+            color: #D1D5DB;
+            font-size: 0.85rem;
+            font-weight: 300;
+            margin: 0;
+        }
+
+        /* --- CARACTERÍSTICAS DEL CARRUSEL ULTRA COMPACTO --- */
+        .carousel-container {
+            width: 100%;
+            height: 380px; /* Altura optimizada y más baja */
+            background-color: var(--bg-card);
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 4px;
+            background-color: #EDEBE9;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 16.66%;
+            background-color: var(--accent-blue);
+            transition: width 0.3s ease;
+        }
+
+        .slides-viewport {
+            flex: 1;
+            position: relative;
+        }
+
+        .slide-item {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            padding: 25px; /* Más compacto por dentro */
+            box-sizing: border-box;
+            gap: 20px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: scale(0.98);
+        }
+
+        .slide-item.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .slide-text-pane {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-counter {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .slide-item h2 {
+            font-size: 1.25rem;
+            color: #252423;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            line-height: 1.2;
+        }
+
+        .slide-item p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+            margin: 0;
+        }
+
+        /* Área de simulación de interfaz */
+        .slide-visual-pane {
+            background-color: var(--pbi-grey-bg);
+            border: 1px solid #C8C6C4;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            overflow: hidden;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- CONTROLES --- */
+        .carousel-controls {
+            height: 48px; /* Más esbelto */
+            border-top: 1px solid var(--border-color);
+            background-color: #FAF9F8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+
+        .btn-nav {
+            background-color: #FFFFFF;
+            border: 1px solid #D2D0CE;
+            color: #323130;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-nav svg {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+
+        .btn-nav:hover {
+            background-color: #F3F2F1;
+            border-color: #A19F9D;
+        }
+
+        .btn-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-dots-indicator {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot-trigger {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #C8C6C4;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .dot-trigger.active {
+            background-color: var(--accent-blue);
+            transform: scale(1.15);
+        }
+
+        /* --- DETALLES DE INTERFAZ REALISTA (ESTILOS SVG) --- */
+        .pbi-svg-frame {
+            width: 100%;
+            height: 100%;
+            max-height: 240px;
+            background: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .pbi-accent-box {
+            stroke: #E01919;
+            stroke-width: 1.5;
+            fill: none;
+            stroke-dasharray: 2 2;
+            animation: highlight-blink 1.5s infinite;
+        }
+
+        @keyframes highlight-blink {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* Reporte interactivo final */
+        .report-canvas-sim {
+            width: 100%;
+            height: 100%;
+            background: #F3F2F1;
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .pbi-nav-pane-sim {
+            width: 110px;
+            background: #FFFFFF;
+            border: 1px solid #D2D0CE;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 5px;
+        }
+
+        .pbi-nav-item-sim {
+            font-size: 0.7rem;
+            padding: 5px 6px;
+            background: #FAF9F8;
+            border: 1px solid #D2D0CE;
+            border-left: 3px solid transparent;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .pbi-nav-item-sim:hover {
+            background: #EFF6FC;
+            border-color: #A19F9D;
+            border-left-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        /* --- BUENAS PRÁCTICAS --- */
+        .best-practices-card {
+            background-color: var(--bg-card);
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .best-practices-card h3 {
+            font-size: 1rem;
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .practices-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 0;
+            margin: 0;
+        }
+
+        .practices-list li {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        .custom-tooltip {
+            position: absolute;
+            background: #252423;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 2px;
+            font-size: 0.7rem;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="edu-module-wrapper">
+        
+        <header class="module-header">
+            <h1>Crear Botones de Navegación en Power BI Desktop</h1>
+            <p>Guía paso a paso para mejorar la experiencia de navegación en tus reportes</p>
+        </header>
+
+        <div class="carousel-container" id="pbiCarousel">
+            
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+
+            <div class="slides-viewport">
+
+                <div class="slide-item active" data-index="1">
+                    <div class="slide-text-pane">
+                        <span class="slide-counter">Introducción</span>
+                        <h2>¿Qué son los botones de navegación?</h2>
+                        <p>Permiten reemplazar o complementar las pestañas inferiores de Power BI Desktop por elementos interactivos integrados directamente en el lienzo. Esto permite una transición fluida simulando el comportamiento avanzado de una aplicación web corporativa.</p>
+                    </div>
+                    <div class="slide-visual-pane">
+                        <svg class="pbi-svg-frame" viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0" y="0" width="240" height="158" fill="#FFFFFF"/>
+                            <line x1="0" y1="40" x2="240" y2="40" stroke="#F3F2F1" stroke-width="0.5"/>
+                            <line x1="0" y1="80" x2="240" y2="80" stroke="#F3F2F1" stroke-width="0.5"/>
+                            <line x1="0" y1="120" x2="240" y2="120" stroke="#F3F2F1" stroke-width="0.5"/>
+                            
+                            <rect x="30" y="30" width="65" height="18" rx="2" fill="#FAF9F8" stroke="#0078D4" stroke-width="1"/>
+                            <path d="M38 39 L43 35 L43 43 Z" fill="#0078D4"/>
+                            <text x="49" y="41" font-size="7" font-weight="600" fill="#252423">Ir a Inicio</text>
+                            
+                            <rect x="0" y="158" width="240" height="22" fill="#FFFFFF" stroke="#EDEBE9" stroke-width="0.75"/>
+                            <rect x="0" y="158" width="55" height="22" fill="#E1DFDD"/>
+                            <text x="27" y="172" font-size="7" font-weight="600" text-anchor="middle" fill="#252423">Página 1</text>
+                            <line x1="55" y1="158" x2="55" y2="180" stroke="#EDEBE9" stroke-width="0.5"/>
+                            <text x="85" y="172" font-size="7" text-anchor="middle" fill="#605E5C">Página 2</text>
+                            <line x1="115" y1="158" x2="115" y2="180" stroke="#EDEBE9" stroke-width="0.5"/>
+                            <text x="145" y="172" font-size="7" text-anchor="middle" fill="#605E5C">Página 3</text>
+                            <text x="180" y="173" font-size="9" fill="#0078D4" font-weight="bold">+</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="slide-item" data-index="2">
+                    <div class="slide-text-pane">
+                        <span class="slide-counter">Paso 1 de 4</span>
+                        <h2>Paso 1: Ir al menú Insertar</h2>
+                        <p>En la parte superior de Power BI Desktop, ubica la cinta de opciones principal. Haz clic en la pestaña <strong>Insertar</strong>, situada exactamente entre 'Modelado' y 'Optimizar'.</p>
+                    </div>
+                    <div class="slide-visual-pane">
+                        <svg class="pbi-svg-frame" viewBox="0 0 240 180">
+                            <rect width="240" height="40" fill="#F3F2F1"/>
+                            <line x1="0" y1="40" x2="240" y2="40" stroke="#D2D0CE" stroke-width="0.5"/>
+                            <text x="12" y="15" font-size="7" fill="#252423">Inicio</text>
+                            <text x="36" y="15" font-size="7" fill="#252423">Modelado</text>
+                            <rect x="72" y="3" width="38" height="16" fill="#FFFFFF"/>
+                            <text x="78" y="14" font-size="7" font-weight="600" fill="#0078D4">Insertar</text>
+                            <rect x="72" y="18" width="38" height="2" fill="#F2C811"/>
+                            <text x="115" y="15" font-size="7" fill="#252423">Optimizar</text>
+                            <rect x="5" y="23" width="50" height="14" rx="1" fill="#FFFFFF" stroke="#D2D0CE" stroke-width="0.5"/>
+                            <text x="10" y="32" font-size="6" fill="#605E5C">Visuales</text>
+                            <rect x="60" y="23" width="65" height="14" rx="1" fill="#FFFFFF" stroke="#D2D0CE" stroke-width="0.5"/>
+                            <path d="M65 30 L69 27 L69 33 Z" fill="#605E5C"/>
+                            <rect x="72" y="27" width="12" height="6" fill="#605E5C"/>
+                            <text x="88" y="32" font-size="6" font-weight="600" fill="#252423">Botones</text>
+                            <path d="M116 28 L119 31 L122 28" stroke="#605E5C" stroke-width="0.75" fill="none"/>
+                            <rect class="pbi-accent-box" x="58" y="21" width="69" height="18"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="slide-item" data-index="3">
+                    <div class="slide-text-pane">
+                        <span class="slide-counter">Paso 2 de 4</span>
+                        <h2>Paso 2: Agregar un botón</h2>
+                        <p>Al hacer clic en <strong>Botones</strong>, se abrirá el menú desplegable oficial de Power BI. Puedes seleccionar un botón <strong>En blanco</strong> para personalizarlo por completo o elegir los automatizados.</p>
+                    </div>
+                    <div class="slide-visual-pane">
+                        <svg class="pbi-svg-frame" viewBox="0 0 240 180">
+                            <rect width="240" height="180" fill="#FAF9F8"/>
+                            <rect x="40" y="10" width="150" height="155" fill="#FFFFFF" stroke="#A19F9D" stroke-width="0.75"/>
+                            <g>
+                                <path d="M48 25 L52 21 L52 29 Z" fill="#605E5C"/> <text x="65" y="26" font-size="7" fill="#252423">Atrás</text>
+                            </g>
+                            <g>
+                                <circle cx="50" cy="45" r="5" fill="none" stroke="#605E5C" stroke-width="1"/> <text x="65" y="47" font-size="7" fill="#252423">Información</text>
+                            </g>
+                            <line x1="40" y1="60" x2="190" y2="60" stroke="#EDEBE9" stroke-width="0.5"/>
+                            <g>
+                                <rect x="41" y="65" width="148" height="20" fill="#EFF6FC"/>
+                                <rect x="48" y="70" width="10" height="10" fill="none" stroke="#0078D4" stroke-width="1"/>
+                                <line x1="51" y1="75" x2="55" y2="75" stroke="#0078D4" stroke-width="1"/>
+                                <text x="65" y="77" font-size="7" font-weight="600" fill="#0078D4">Navegador de páginas</text>
+                                <rect class="pbi-accent-box" x="42" y="64" width="146" height="22"/>
+                            </g>
+                            <g>
+                                <rect x="48" y="100" width="12" height="8" fill="none" stroke="#605E5C" stroke-width="1"/> <text x="65" y="106" font-size="7" fill="#252423">En blanco</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="slide-item" data-index="4">
+                    <div class="slide-text-pane">
+                        <span class="slide-counter">Paso 3 de 4</span>
+                        <h2>Paso 3: Activar la acción</h2>
+                        <p>Con tu nuevo botón seleccionado en el lienzo, observa el panel lateral de <strong>Formato</strong> en el extremo derecho. Localiza la tarjeta de propiedades <strong>Acción</strong> y activa su interruptor principal (On).</p>
+                    </div>
+                    <div class="slide-visual-pane">
+                        <svg class="pbi-svg-frame" viewBox="0 0 240 180">
+                            <rect x="40" y="0" width="200" height="180" fill="#FFFFFF" stroke="#D2D0CE" stroke-width="0.5"/>
+                            <rect x="40" y="0" width="200" height="25" fill="#FAF9F8"/>
+                            <text x="50" y="16" font-size="8" font-weight="600" fill="#252423">Formato de botón</text>
+                            <text x="65" y="46" font-size="7" fill="#605E5C">Forma</text>
+                            <text x="65" y="66" font-size="7" fill="#605E5C">Estilo</text>
+                            <rect x="45" y="85" width="190" height="65" fill="#FAF9F8" stroke="#EDEBE9"/>
+                            <text x="70" y="101" font-size="7" font-weight="600" fill="#252423">Acción</text>
+                            <rect x="200" y="93" width="20" height="10" rx="5" fill="#118DFF"/>
+                            <circle cx="214" cy="98" r="6" fill="#FFFFFF"/>
+                            <text x="60" y="125" font-size="7" fill="#605E5C">Tipo</text>
+                            <rect x="95" y="117" width="130" height="14" fill="#FFFFFF" stroke="#D2D0CE" stroke-width="0.5"/>
+                            <rect class="pbi-accent-box" x="43" y="83" width="194" height="69"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="slide-item" data-index="5">
+                    <div class="slide-text-pane">
+                        <span class="slide-counter">Paso 4 de 4</span>
+                        <h2>Paso 4: Configurar la navegación</h2>
+                        <p>En el campo <strong>Tipo</strong>, despliega las opciones y selecciona <strong>Navegación de páginas</strong>. Justo debajo aparecerá el campo condicional <strong>Destino</strong>; haz clic y selecciona la hoja exacta a la que deseas saltar.</p>
+                    </div>
+                    <div class="slide-visual-pane">
+                        <svg class="pbi-svg-frame" viewBox="0 0 240 180">
+                            <rect x="30" y="10" width="200" height="150" fill="#FAF9F8" stroke="#D2D0CE" stroke-width="0.5"/>
+                            <text x="40" y="28" font-size="7" font-weight="600" fill="#252423">⚡ Acción</text>
+                            <text x="45" y="52" font-size="7" fill="#605E5C">Tipo</text>
+                            <rect x="45" y="58" width="170" height="16" fill="#FFFFFF" stroke="#0078D4" stroke-width="1"/>
+                            <text x="52" y="69" font-size="7" font-weight="600" fill="#252423">Navegación de páginas</text>
+                            <path d="M204 64 L208 68 L212 64" stroke="#252423" stroke-width="1" fill="none"/>
+                            <text x="45" y="94" font-size="7" fill="#605E5C">Destino</text>
+                            <rect x="45" y="100" width="170" height="16" fill="#FFFFFF" stroke="#D2D0CE" stroke-width="0.5"/>
+                            <text x="52" y="111" font-size="7" font-weight="600" fill="#252423">Tablero de Ventas</text>
+                            <rect class="pbi-accent-box" x="42" y="98" width="176" height="20"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="slide-item" data-index="6">
+                    <div class="slide-text-pane">
+                        <span class="slide-counter">Resultado</span>
+                        <h2>Resultado final e interacción</h2>
+                        <p>¡Tu menú de navegación está operativo! En Power BI Desktop, para probar tus botones mientras editas, mantén presionada la tecla <kbd style="background:#E1DFDD; padding:1px 4px; border-radius:2px; font-size:0.8rem; border:1px solid #A19F9D;">Ctrl</kbd> e interactúa con ellos.</p>
+                    </div>
+                    <div class="slide-visual-pane">
+                        <div class="report-canvas-sim">
+                            <div class="pbi-nav-pane-sim">
+                                <div class="pbi-nav-item-sim" data-txt="Ir a Portada Principal">🏠 Inicio</div>
+                                <div class="pbi-nav-item-sim" style="background:#EFF6FC; border-color:#A19F9D; border-left-color:var(--accent-blue); color:var(--accent-blue);" data-txt="Página actual">📊 Ventas</div>
+                                <div class="pbi-nav-item-sim" data-txt="Análisis detallado de clientes">👥 Clientes</div>
+                                <div class="pbi-nav-item-sim" data-txt="Inventario y existencias">📦 Productos</div>
+                                <div class="pbi-nav-item-sim" data-txt="Métricas financieras consolidadas">💰 Finanzas</div>
+                            </div>
+                            <div style="flex:1; background:#FFFFFF; border:1px solid #D2D0CE; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:#A19F9D; padding:5px; text-align:center;">
+                                Canvas de Reporte (Ventas)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="carousel-controls">
+                <button class="btn-nav" id="btnPrev">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                    Anterior
+                </button>
+
+                <div class="nav-dots-indicator" id="dotsContainer"></div>
+
+                <button class="btn-nav" id="btnNext">
+                    Siguiente
+                    <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </button>
+            </div>
+
+        </div>
+
+        <section class="best-practices-card">
+            <h3>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#D9B20F"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                Buenas prácticas
+            </h3>
+            <ul class="practices-list">
+                <li>• <strong>Nombres claros:</strong> Usa nombres explícitos y directos en el texto de los botones.</li>
+                <li>• <strong>Consistencia visual:</strong> Mantén los botones en la misma posición en todas las páginas.</li>
+                <li>• <strong>Botón de inicio siempre:</strong> Incluye una opción clara para retornar al menú principal.</li>
+                <li>• <strong>Evita saturar:</strong> No utilices un número excesivo de botones por lienzo.</li>
+                <li>• <strong>Usa Iconografía:</strong> Apóyate en símbolos estándar para agilizar la comprensión del usuario.</li>
+            </ul>
+        </section>
+
+    </div>
+
+    <div class="custom-tooltip" id="carouselTooltip"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide-item');
+            const progressBar = document.getElementById('progressBar');
+            const dotsContainer = document.getElementById('dotsContainer');
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+            const tooltip = document.getElementById('carouselTooltip');
+
+            let currentIndex = 0;
+            const totalSlides = slides.length;
+            let autoTimer = null;
+
+            function initDots() {
+                dotsContainer.innerHTML = '';
+                for (let i = 0; i < totalSlides; i++) {
+                    const dot = document.createElement('button');
+                    dot.className = `dot-trigger ${i === 0 ? 'active' : ''}`;
+                    dot.setAttribute('data-target', i);
+                    dotsContainer.appendChild(dot);
+                }
+            }
+
+            function updateCarousel(idx) {
+                slides[currentIndex].classList.remove('active');
+                document.querySelectorAll('.dot-trigger')[currentIndex].classList.remove('active');
+
+                currentIndex = idx;
+
+                slides[currentIndex].classList.add('active');
+                document.querySelectorAll('.dot-trigger')[currentIndex].classList.add('active');
+
+                progressBar.style.width = `${((currentIndex + 1) / totalSlides) * 100}%`;
+
+                btnPrev.disabled = currentIndex === 0;
+                btnNext.disabled = currentIndex === totalSlides - 1;
+            }
+
+            function nextSlide() {
+                updateCarousel(currentIndex < totalSlides - 1 ? currentIndex + 1 : 0);
+            }
+
+            function startTimer() {
+                clearInterval(autoTimer);
+                autoTimer = setInterval(nextSlide, 8000);
+            }
+
+            btnNext.addEventListener('click', () => { nextSlide(); startTimer(); });
+            btnPrev.addEventListener('click', () => { if(currentIndex > 0) updateCarousel(currentIndex - 1); startTimer(); });
+
+            dotsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('dot-trigger')) {
+                    updateCarousel(parseInt(e.target.getAttribute('data-target')));
+                    startTimer();
+                }
+            });
+
+            document.querySelectorAll('[data-txt]').forEach(el => {
+                el.addEventListener('mousemove', (e) => {
+                    tooltip.textContent = el.getAttribute('data-txt');
+                    tooltip.style.opacity = '1';
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY - 10) + 'px';
+                });
+                el.addEventListener('mouseleave', () => tooltip.style.opacity = '0');
+            });
+
+            initDots();
+            updateCarousel(0);
+            startTimer();
+        });
+    </script>
+</body>
+</html>
