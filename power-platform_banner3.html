@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Power Platform · Welcome</title>
+  <style>
+    /* Reset + Base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: #F9FAFB;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      color: #1F2937;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Canvas fondo */
+    #canvas-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      display: block;
+      background: linear-gradient(145deg, #F9FAFB 0%, #E5F4E5 100%);
+      opacity: 0.8;
+    }
+    /* Contenedor principal horizontal */
+    .dashboard {
+      position: relative;
+      z-index: 10;
+      width: 94vw;
+      max-width: 1440px;
+      height: 88vh;
+      max-height: 820px;
+      background: rgba(255, 255, 255, 0.50);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-radius: 40px;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.10), 0 8px 24px -6px rgba(16, 124, 16, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      display: grid;
+      grid-template-columns: 20% 45% 35%;
+      grid-template-rows: 1fr;
+      gap: 0;
+      padding: 20px 24px;
+      transition: all 0.2s;
+    }
+    /* Columnas */
+    .col-brand {
+      padding-right: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      border-right: 1px solid rgba(229, 231, 235, 0.5);
+    }
+    .col-main {
+      padding: 0 20px 0 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .col-cards {
+      padding-left: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    /* Branding */
+    .brand-logo {
+      margin-bottom: 12px;
+      filter: drop-shadow(0 4px 8px rgba(16, 124, 16, 0.12));
+      animation: floatLogo 6s ease-in-out infinite;
+    }
+    .brand-badge {
+      background: rgba(16, 124, 16, 0.08);
+      backdrop-filter: blur(2px);
+      padding: 6px 16px 6px 14px;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #107C10;
+      border: 1px solid rgba(16, 124, 16, 0.15);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      white-space: nowrap;
+    }
+    .brand-badge svg {
+      width: 16px;
+      height: 16px;
+      fill: #107C10;
+    }
+    /* Mensaje principal */
+    .main-title {
+      font-size: 2.1rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: #1F2937;
+      margin-bottom: 8px;
+      animation: fadeSlide 0.9s ease-out;
+    }
+    .main-title span {
+      background: linear-gradient(145deg, #107C10, #16A34A);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .main-desc {
+      font-size: 0.95rem;
+      color: #4B5563;
+      max-width: 90%;
+      line-height: 1.5;
+      margin-bottom: 14px;
+      animation: fadeSlide 1s ease-out;
+      font-weight: 400;
+    }
+    /* CTA eliminado: se mantiene solo la frase */
+    .quote {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #4B5563;
+      border-left: 3px solid #16A34A;
+      padding-left: 14px;
+      font-style: italic;
+      opacity: 0.7;
+      animation: fadeSlide 1.4s ease-out;
+    }
+    /* Tarjetas grid 2x3 */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: repeat(3, 1fr);
+      gap: 10px;
+      height: 100%;
+      max-height: 380px;
+      align-content: center;
+    }
+    .card-item {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      border: 1px solid #E5E7EB;
+      border-radius: 18px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+      animation: fadeSlide 0.8s ease-out both;
+    }
+    .card-item:nth-child(1) { animation-delay: 0.05s; }
+    .card-item:nth-child(2) { animation-delay: 0.10s; }
+    .card-item:nth-child(3) { animation-delay: 0.15s; }
+    .card-item:nth-child(4) { animation-delay: 0.20s; }
+    .card-item:nth-child(5) { animation-delay: 0.25s; }
+    .card-item:nth-child(6) { animation-delay: 0.30s; }
+
+    .card-item:hover {
+      transform: translateY(-3px);
+      border-color: #86EFAC;
+      box-shadow: 0 10px 20px -8px rgba(16, 124, 16, 0.18), 0 0 0 1px rgba(34, 197, 94, 0.15);
+      background: rgba(255, 255, 255, 0.9);
+    }
+    .card-icon {
+      font-size: 1.1rem;
+      margin-bottom: 2px;
+      color: #107C10;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 0.01em;
+      color: #1F2937;
+      margin-bottom: 1px;
+    }
+    .card-desc {
+      font-size: 0.6rem;
+      color: #4B5563;
+      line-height: 1.3;
+      opacity: 0.8;
+    }
+    /* Flotación logo */
+    @keyframes floatLogo {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+      100% { transform: translateY(0); }
+    }
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    /* Ajustes responsive */
+    @media (max-width: 1024px) {
+      .dashboard {
+        grid-template-columns: 18% 42% 40%;
+        padding: 16px 18px;
+        height: 90vh;
+      }
+      .main-title { font-size: 1.8rem; }
+    }
+    @media (max-width: 820px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        height: auto;
+        max-height: 96vh;
+        overflow-y: auto;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 28px;
+      }
+      .col-brand { border-right: none; align-items: center; text-align: center; }
+      .col-main { align-items: center; text-align: center; }
+      .col-cards { padding-left: 0; }
+      .cards-grid { max-height: 400px; }
+      .main-desc { max-width: 100%; }
+      .quote { border-left: none; border-top: 2px solid #16A34A; padding-left: 0; padding-top: 6px; }
+    }
+    /* Microinteracciones */
+    .glow-green {
+      transition: box-shadow 0.2s;
+    }
+    .glow-green:hover {
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+    }
+    #canvas-bg {
+      pointer-events: none;
+    }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+
+  <canvas id="canvas-bg"></canvas>
+
+  <div class="dashboard">
+
+    <!-- COLUMNA IZQUIERDA: Branding -->
+    <div class="col-brand">
+      <div class="brand-logo">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="56" height="56" rx="16" fill="white" stroke="#107C10" stroke-width="2.5" />
+          <path d="M16 30 L24 22 L32 30 L24 38 L16 30Z" fill="#107C10" />
+          <path d="M30 22 L38 14 L46 22 L38 30 L30 22Z" fill="#16A34A" />
+          <path d="M44 30 L52 22 L60 30 L52 38 L44 30Z" fill="#22C55E" />
+          <path d="M30 38 L38 46 L46 38 L38 30 L30 38Z" fill="#86EFAC" />
+          <circle cx="32" cy="32" r="4" fill="white" stroke="#107C10" stroke-width="1.5" />
+        </svg>
+      </div>
+      <div class="brand-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        Microsoft Power Platform
+      </div>
+    </div>
+
+    <!-- COLUMNA CENTRO: Mensaje + frase (sin botón) -->
+    <div class="col-main">
+      <h1 class="main-title">Construye el futuro con <span>Power Platform</span></h1>
+      <p class="main-desc">Low-code, IA empresarial y automatización inteligente. Acelera la transformación digital con la confianza de Microsoft.</p>
+      <div class="quote">“Low code · IA · Datos · Todo en un ecosistema unificado”</div>
+    </div>
+
+    <!-- COLUMNA DERECHA: 6 tarjetas (2x3) -->
+    <div class="col-cards">
+      <div class="cards-grid">
+        <div class="card-item"><div class="card-icon">⚡</div><div class="card-title">Automatización</div><div class="card-desc">Flujos inteligentes con IA</div></div>
+        <div class="card-item"><div class="card-icon">📊</div><div class="card-title">Business Intelligence</div><div class="card-desc">Dashboards en tiempo real</div></div>
+        <div class="card-item"><div class="card-icon">🛠️</div><div class="card-title">Low Code</div><div class="card-desc">Desarrollo visual ágil</div></div>
+        <div class="card-item"><div class="card-icon">🤖</div><div class="card-title">IA Empresarial</div><div class="card-desc">Modelos predictivos</div></div>
+        <div class="card-item"><div class="card-icon">🔗</div><div class="card-title">Conectores</div><div class="card-desc">+400 integraciones</div></div>
+        <div class="card-item"><div class="card-icon">🛡️</div><div class="card-title">Seguridad Zero Trust</div><div class="card-desc">Cumplimiento y gobernanza</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    (function() {
+      // Canvas partículas y conexiones — fondo tecnológico verde / claro
+      const canvas = document.getElementById('canvas-bg');
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let particles = [];
+      const PARTICLE_COUNT = 80;
+      const CONNECTION_DIST = 150;
+      const MOUSE_RADIUS = 200;
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 0.6;
+          this.vy = (Math.random() - 0.5) * 0.6;
+          this.radius = Math.random() * 2.6 + 1.2;
+          const green = Math.floor(160 + Math.random() * 95);
+          this.color = `rgba(${60 + Math.random()*40}, ${green}, ${80 + Math.random()*50}, 0.45)`;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+      }
+
+      function initParticles() {
+        particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          particles.push(new Particle());
+        }
+      }
+      initParticles();
+
+      let mouse = { x: width/2, y: height/2, active: false };
+      canvas.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.active = true;
+      });
+      canvas.addEventListener('mouseleave', () => { mouse.active = false; });
+
+      function drawConnections() {
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < CONNECTION_DIST) {
+              const alpha = 0.25 * (1 - dist / CONNECTION_DIST);
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(22, 163, 74, ${alpha})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      function drawMouseConnections() {
+        if (!mouse.active) return;
+        for (let p of particles) {
+          const dx = p.x - mouse.x;
+          const dy = p.y - mouse.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < MOUSE_RADIUS) {
+            const alpha = 0.18 * (1 - dist / MOUSE_RADIUS);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(34, 197, 94, ${alpha})`;
+            ctx.lineWidth = 1.0;
+            ctx.stroke();
+          }
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        const grad = ctx.createRadialGradient(width/2, height/2, 100, width/2, height/2, 800);
+        grad.addColorStop(0, 'rgba(220, 252, 231, 0.25)');
+        grad.addColorStop(0.6, 'rgba(220, 252, 231, 0.10)');
+        grad.addColorStop(1, 'rgba(249, 250, 251, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
+
+        for (let p of particles) {
+          p.update();
+          p.draw();
+        }
+        drawConnections();
+        drawMouseConnections();
+        requestAnimationFrame(animate);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        resize();
+        initParticles();
+      });
+
+      // Microinteracción adicional (sin funcionalidad extra)
+      const cards = document.querySelectorAll('.card-item');
+      cards.forEach(card => {
+        card.addEventListener('mouseenter', function(e) {
+          this.style.transition = 'all 0.2s';
+        });
+      });
+
+      console.log('Power Platform · Welcome · Tema claro ejecutivo (sin botón)');
+    })();
+  </script>
+
+</body>
+</html>
