@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Interactiva Oficial: Copilot Studio (Fiel a la Interfaz)</title>
+    <!-- Font Awesome para Iconos de Apoyo -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --m365-blue: #0047BB;
+            --m365-hover-blue: #003399;
+            --fluent-bg: #F3F2F1;
+            --fluent-text: #201F1E;
+            --fluent-secondary-text: #605E5C;
+            --fluent-border: #EDEBE9;
+            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.04);
+            --radius-fluent: 4px;
+            --radius-card: 16px;
+            --primary-accent: #0F6CBD;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #FAFAFA;
+            color: var(--fluent-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- BARRA SUPERIOR OFICIAL (FIEL A LA IMAGEN) --- */
+        .copilot-top-bar {
+            background-color: #0047BB; /* Azul exacto de la captura */
+            color: white;
+            height: 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .waffle-menu {
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .brand-title {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .environment-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 12px;
+            border-radius: 4px;
+            max-width: 260px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .environment-selector span strong {
+            display: block;
+            font-size: 10px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .top-icons {
+            display: flex;
+            gap: 16px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .user-profile-tag {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* --- CONTENEDOR DE LA APLICACIÓN --- */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            flex: 1;
+            min-height: calc(100vh - 48px);
+        }
+
+        /* --- MENÚ LATERAL IZQUIERDO REFINADO --- */
+        .sidebar-fluent {
+            background-color: #F3F2F1;
+            border-right: 1px solid var(--fluent-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 12px;
+            gap: 4px;
+            position: relative;
+        }
+
+        .fluent-nav-item {
+            width: 68px;
+            height: 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--fluent-secondary-text);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            text-align: center;
+            padding: 4px;
+            position: relative;
+        }
+
+        .fluent-nav-item:hover {
+            background-color: #EDEBE9;
+            color: var(--fluent-text);
+        }
+
+        .fluent-nav-item.active {
+            background-color: #FFFFFF;
+            color: var(--m365-blue);
+            font-weight: 600;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .fluent-nav-item i {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .fluent-nav-item.active i {
+            color: var(--m365-blue);
+        }
+
+        .sidebar-divider {
+            width: 40px;
+            height: 1px;
+            background-color: var(--fluent-border);
+            margin: 8px 0;
+        }
+
+        /* --- CUERPO PRINCIPAL DE TRABAJO --- */
+        .main-workspace {
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #FFFFFF;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        /* Encabezado Principal */
+        .workspace-title {
+            font-size: 32px;
+            font-weight: 600;
+            color: #201F1E;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        /* Selector de Tipo de Proyecto (Pestañas pastilla) */
+        .project-type-selector {
+            display: flex;
+            background-color: #F3F2F1;
+            padding: 4px;
+            border-radius: 20px;
+            margin-bottom: 32px;
+            gap: 4px;
+        }
+
+        .pill-tab {
+            padding: 6px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+            color: var(--fluent-secondary-text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .pill-tab.active {
+            background-color: #006E8A; /* Color petróleo oscuro adaptado */
+            color: #FFFFFF;
+        }
+
+        /* Barra de entrada de descripción inteligente */
+        .description-input-box {
+            width: 100%;
+            max-width: 840px;
+            background-color: #FFFFFF;
+            border: 1px solid #D2D0CE;
+            border-radius: 28px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--fluent-secondary-text);
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            margin-bottom: 48px;
+            transition: all 0.2s;
+        }
+
+        .description-input-box:hover {
+            border-color: #A19F9D;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .input-left-zone {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .input-arrow-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #F3F2F1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #A19F9D;
+            cursor: pointer;
+        }
+
+        /* Grid de Creación desde Cero */
+        .section-subtitle {
+            width: 100%;
+            max-width: 840px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #201F1E;
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .cards-creation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 840px;
+        }
+
+        .fluent-creation-card {
+            background: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            border-radius: var(--radius-card);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+
+        .fluent-creation-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--m365-blue);
+            box-shadow: 0 8px 24px rgba(0, 71, 187, 0.08);
+        }
+
+        .card-icon-wrapper {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        /* Recreación de formas de iconos geométricos de Microsoft */
+        .fluent-svg-icon {
+            width: 56px;
+            height: 56px;
+        }
+
+        .fluent-creation-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #201F1E;
+        }
+
+        .fluent-creation-card p {
+            font-size: 12.5px;
+            color: var(--fluent-secondary-text);
+            line-height: 1.5;
+        }
+
+        /* --- MARCADORES INTERACTIVOS --- */
+        .interactive-badge {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: var(--primary-accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            box-shadow: 0 0 0 3px rgba(15, 108, 189, 0.2), 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 10;
+            transition: all 0.2s;
+        }
+
+        .interactive-badge:hover, .interactive-badge.active {
+            transform: scale(1.2);
+            background: #003399;
+            box-shadow: 0 0 0 5px rgba(0, 51, 153, 0.2), 0 0 10px #49D3D0;
+        }
+
+        /* Posicionamiento estratégico sobre los elementos de la imagen */
+        #badge-topbar { top: 12px; left: 160px; }
+        #badge-env { top: 12px; right: 280px; }
+        #badge-nav-inicio { top: 24px; left: 56px; }
+        #badge-nav-agentes { top: 88px; left: 56px; }
+        #badge-nav-flujos { top: 152px; left: 56px; }
+        #badge-nav-comp { top: 280px; left: 56px; }
+        #badge-input { top: 172px; right: 60px; }
+        #badge-card1 { top: 20px; right: 20px; }
+        #badge-card3 { top: 20px; right: 20px; }
+
+        /* --- PANEL DE RECORRIDO INFERIOR FIJO --- */
+        .tour-floating-bar {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(32, 31, 30, 0.95);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            z-index: 1000;
+        }
+
+        .tour-btn {
+            background-color: var(--primary-accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tour-btn:hover {
+            background-color: #005A9E;
+        }
+
+        .tour-btn-secondary {
+            background: transparent;
+            color: #E1DFDD;
+            border: 1px solid #605E5C;
+        }
+
+        /* --- MODAL DETALLADO POPUP --- */
+        .fluent-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .fluent-modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .fluent-modal-card {
+            background: #FFFFFF;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 460px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+            overflow: hidden;
+            border: 1px solid var(--fluent-border);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+
+        .fluent-modal-overlay.open .fluent-modal-card {
+            transform: scale(1);
+        }
+
+        .fluent-modal-header {
+            padding: 16px 20px;
+            background: #F3F2F1;
+            border-bottom: 1px solid var(--fluent-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fluent-modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--fluent-text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fluent-modal-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--fluent-secondary-text);
+        }
+
+        .fluent-modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--fluent-secondary-text);
+        }
+
+        .benefit-badge {
+            background-color: #F3F7FA;
+            border-left: 3px solid var(--primary-accent);
+            padding: 10px 14px;
+            font-weight: 500;
+        }
+
+        .fluent-modal-footer {
+            padding: 12px 20px;
+            background: #FAFAFA;
+            border-top: 1px solid var(--fluent-border);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- SECCIÓN LEYENDA INFERIOR EN GRID --- */
+        .workspace-footer-legend {
+            background-color: #F3F2F1;
+            padding: 40px;
+            border-top: 1px solid var(--fluent-border);
+        }
+
+        .legend-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--fluent-text);
+        }
+
+        .legend-flex-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .legend-item-box {
+            background: #FFFFFF;
+            border: 1px solid var(--fluent-border);
+            padding: 14px;
+            border-radius: 6px;
+            display: flex;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .legend-item-box:hover {
+            border-color: var(--m365-blue);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .legend-index-circle {
+            width: 22px;
+            height: 22px;
+            background-color: var(--m365-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .legend-item-text h4 {
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .legend-item-text p {
+            font-size: 12px;
+            color: var(--fluent-secondary-text);
+        }
+
+        @media(max-width: 768px) {
+            .app-layout { grid-template-columns: 1fr; }
+            .sidebar-fluent { display: flex; flex-direction: row; overflow-x: auto; height: auto; width: 100%; padding: 8px; }
+            .cards-creation-grid { grid-template-columns: 1fr; }
+            .top-bar-right { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. BARRA SUPERIOR FIEL A LA IMAGEN -->
+    <div class="copilot-top-bar">
+        <div class="top-bar-left">
+            <i class="fa-solid fa-grid-2x2 waffle-menu" title="Aplicaciones de Microsoft 365"></i>
+            <span class="brand-title">Copilot Studio</span>
+            <div class="interactive-badge" id="badge-topbar" data-target="1">1</div>
+        </div>
+        <div class="top-bar-right">
+            <!-- Entorno de la captura -->
+            <div class="environment-selector">
+                <i class="fa-solid fa-network-wired"></i>
+                <span><span>Entorno</span><strong>COMISION DE REGULA...</strong></span>
+            </div>
+            <div class="top-icons">
+                <i class="fa-solid fa-gear" title="Configuración"></i>
+                <i class="fa-solid fa-question" title="Ayuda"></i>
+            </div>
+            <div class="user-profile-tag">
+                <i class="fa-regular fa-circle-user" style="font-size: 18px;"></i>
+                <span>Fabián Trujillo Caj...</span>
+            </div>
+            <div class="interactive-badge" id="badge-env" data-target="2">2</div>
+        </div>
+    </div>
+
+    <!-- ESTRUCTURA PRINCIPAL -->
+    <div class="app-layout">
+        
+        <!-- 2. MENÚ LATERAL IZQUIERDO CON AGREGADOS DEL USUARIO -->
+        <nav class="sidebar-fluent" aria-label="Menú de Navegación Lateral">
+            <div class="fluent-nav-item active" data-target="3">
+                <i class="fa-solid fa-house"></i>
+                <span>Inicio</span>
+                <div class="interactive-badge" id="badge-nav-inicio" data-target="3">3</div>
+            </div>
+            <div class="fluent-nav-item" data-target="4">
+                <i class="fa-solid fa-code-branch"></i>
+                <span>Agentes</span>
+                <div class="interactive-badge" id="badge-nav-agentes" data-target="4">4</div>
+            </div>
+            <div class="fluent-nav-item" data-target="5">
+                <i class="fa-solid fa-circle-nodes"></i>
+                <span>Flujos</span>
+                <div class="interactive-badge" id="badge-nav-flujos" data-target="5">5</div>
+            </div>
+            <div class="fluent-nav-item" data-target="6">
+                <i class="fa-solid fa-cubes"></i>
+                <span>Herramie...</span>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <!-- Nuevas opciones solicitadas por el usuario -->
+            <div class="fluent-nav-item" data-target="7" title="Colecciones de componentes">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Colecciones</span>
+                <div class="interactive-badge" id="badge-nav-comp" data-target="7">7</div>
+            </div>
+            <div class="fluent-nav-item" data-target="8" title="Soluciones">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>Soluciones</span>
+            </div>
+            <div class="fluent-nav-item">
+                <i class="fa-solid fa-ellipsis"></i>
+            </div>
+        </nav>
+
+        <!-- 3. CUERPO DE TRABAJO PRINCIPAL RECREADO -->
+        <main class="main-workspace">
+            
+            <h1 class="workspace-title">¿Qué le gustaría crear?</h1>
+            
+            <!-- Selector de pastilla -->
+            <div class="project-type-selector">
+                <button class="pill-tab active"><i class="fa-solid fa-code"></i> Agente</button>
+                <button class="pill-tab"><i class="fa-solid fa-route"></i> Flujo de trabajo</button>
+            </div>
+
+            <!-- Entrada de lenguaje natural -->
+            <div class="description-input-box">
+                <div class="input-left-zone">
+                    <i class="fa-solid fa-gear" style="color: #8A8886;"></i>
+                    <span>Comience a crear mediante la descripción de lo que el agente debe hacer</span>
+                </div>
+                <div class="input-arrow-btn">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </div>
+                <div class="interactive-badge" id="badge-input" data-target="6">6</div>
+            </div>
+
+            <h2 class="section-subtitle">Empezar a crear desde cero</h2>
+
+            <!-- Grid de Tarjetas de Creación -->
+            <div class="cards-creation-grid">
+                
+                <!-- Tarjeta 1: Agente -->
+                <div class="fluent-creation-card" data-target="4">
+                    <div class="card-icon-wrapper">
+                        <!-- Icono SVG geométrico simulado -->
+                        <svg class="fluent-svg-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M24 4L40 14V34L24 44L8 34V14L24 4Z" fill="url(#grad1)" />
+                            <circle cx="24" cy="24" r="8" fill="#FFFFFF" opacity="0.9"/>
+                            <defs>
+                                <linearGradient id="grad1" x1="8" y1="4" x2="40" y2="44" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#A133F2"/>
+                                    <stop offset="1" stop-color="#106EBE"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h3>Agente</h3>
+                    <p>Responde a preguntas y realiza acciones en su sitio web, en Microsoft Teams y mucho más.</p>
+                    <div class="interactive-badge" id="badge-card1" data-target="4">4</div>
+                </div>
+
+                <!-- Tarjeta 2: Agente que utiliza un equipo -->
+                <div class="fluent-creation-card" data-target="9">
+                    <div class="card-icon-wrapper">
+                        <svg class="fluent-svg-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="6" y="12" width="36" height="22" rx="3" fill="url(#grad2)" />
+                            <path d="M4 36H44V39H4V36Z" fill="#8A8886" />
+                            <circle cx="38" cy="10" r="3" fill="#FFB900" />
+                            <defs>
+                                <linearGradient id="grad2" x1="6" y1="12" x2="42" y2="34" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#00B7C3"/>
+                                    <stop offset="1" stop-color="#0078D4"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h3>Agente que utiliza un equipo</h3>
+                    <p>Permitir que los agentes consigan aún más en aplicaciones y sitios web</p>
+                </div>
+
+                <!-- Tarjeta 3: Crear flujo de trabajo -->
+                <div class="fluent-creation-card" data-target="5">
+                    <div class="card-icon-wrapper">
+                        <svg class="fluent-svg-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M24 6L36 16L24 26L12 16L24 6Z" fill="#F25022" />
+                            <circle cx="12" cy="34" r="5" fill="#7FBA00" />
+                            <circle cx="36" cy="34" r="5" fill="#00A4EF" />
+                            <path d="M24 26V34" stroke="#8A8886" stroke-width="2" />
+                            <div class="interactive-badge" id="badge-card3" data-target="5">5</div>
+                        </svg>
+                    </div>
+                    <h3>Crear flujo de trabajo</h3>
+                    <p>Las potentes automatizaciones aceleran los procesos con facilidad y seguridad</p>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 4. SECCIÓN LEYENDA INFERIOR COMPLETA -->
+    <footer class="workspace-footer-legend">
+        <h3 class="legend-title">Arquitectura y Componentes del Portal de Bienvenida</h3>
+        <div class="legend-flex-grid" id="legend-grid-container"></div>
+    </footer>
+
+    <!-- BARRA FLOTANTE DEL TOUR GUIADO -->
+    <div class="tour-floating-bar">
+        <span style="font-size: 13px; font-weight: 500; color: #EDEBE9;">Recorrido Educativo de la Interfaz Real</span>
+        <button class="tour-btn" id="btn-start-guided">Iniciar Guía Paso a Paso</button>
+    </div>
+
+    <!-- FLUENT MODAL SYSTEM -->
+    <div class="fluent-modal-overlay" id="fluent-modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="fluent-modal-card">
+            <div class="fluent-modal-header">
+                <h3 id="m-title"><i class="fa-solid fa-circle-info"></i> Título</h3>
+                <button class="fluent-modal-close" id="m-close">&times;</button>
+            </div>
+            <div class="fluent-modal-body">
+                <div>
+                    <div class="section-label">Funcionalidad en la Plataforma</div>
+                    <p id="m-desc" style="color: #201F1E; margin-top:4px;"></p>
+                </div>
+                <div class="benefit-badge">
+                    <div class="section-label" style="color: var(--m365-blue);">Valor de Adopción</div>
+                    <p id="m-benefit" style="color: #003399; margin-top:2px; font-weight:600;"></p>
+                </div>
+                <div style="background: #FAFAFA; padding: 10px; border-radius:4px;">
+                    <div class="section-label">Ejemplo de Uso Real</div>
+                    <p id="m-example" style="font-style: italic; color: #323130; margin-top:2px;"></p>
+                </div>
+            </div>
+            <div class="fluent-modal-footer">
+                <button class="tour-btn tour-btn-secondary" id="m-prev">Anterior</button>
+                <button class="tour-btn" id="m-next">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos enriquecidos e integrados según la imagen oficial y los agregados solicitados
+        const tourSteps = {
+            1: {
+                title: "Barra de Herramientas y Encabezado de Copilot Studio",
+                desc: "Es la cabecera superior unificada de Microsoft 365 que identifica la suite y provee el lanzador de aplicaciones (waffle) para saltar a otras herramientas corporativas.",
+                benefit: "Mantiene la identidad institucional y la integración nativa con el ecosistema de la empresa.",
+                example: "Utilizar el menú waffle de la izquierda para abrir Power Automate sin cerrar Copilot Studio."
+            },
+            2: {
+                title: "Selector de Entorno Activo (Environment)",
+                desc: "Muestra y permite cambiar la región u organización técnica en la que estás trabajando. En tu caso, está configurado correctamente en el entorno de la 'Comisión de Regulación de Comunicaciones'.",
+                benefit: "Garantiza que los agentes y datos se almacenen en los servidores y políticas correctas de cumplimiento de tu entidad.",
+                example: "Asegurarse de estar en el entorno productivo de la CRC antes de desplegar un bot de fiscalización."
+            },
+            3: {
+                title: "Sección de Inicio (Dashboard)",
+                desc: "Es la pantalla de bienvenida nativa que observamos en la captura. Proporciona el punto de partida rápido para describir ideas con lenguaje natural o arrancar proyectos limpios.",
+                benefit: "Agiliza el inicio del trabajo sin necesidad de navegar por submenús complejos.",
+                example: "Ver de un solo vistazo las tres opciones principales de creación directa."
+            },
+            4: {
+                title: "Módulo de Agentes Inteligentes",
+                desc: "Accesible desde el menú izquierdo o la primera tarjeta. Permite crear y gestionar los agentes conversacionales principales encargados de automatizar diálogos y responder consultas.",
+                benefit: "Concentra el core del desarrollo inteligente, empaquetando fuentes de datos y flujos en un asistente virtual.",
+                example: "Crear un agente interactivo que resuelva inquietudes legales sobre etapas administrativas de expedientes."
+            },
+            5: {
+                title: "Módulo de Flujos de Trabajo",
+                desc: "Ubicado en el menú de navegación y en la tercera tarjeta de creación. Conecta las capacidades conversacionales con las automatizaciones de Power Automate.",
+                benefit: "Permite al agente ejecutar acciones reales en segundo plano, no solo responder con texto estático.",
+                example: "Lanzar un flujo automatizado para enviar alertas o reportes mensuales de consumo."
+            },
+            6: {
+                title: "Barra Inteligente de Copilot (Generación por Descripción)",
+                desc: "Es el gran cuadro de texto central donde puedes describir en lenguaje natural qué quieres que haga tu agente para que la Inteligencia Artificial genere la base por ti.",
+                benefit: "Reduce drásticamente la curva de aprendizaje al permitir crear prototipos conversacionales con simples palabras.",
+                example: "Escribir: 'Crea un agente que busque radicados de empresas colombianas usando su NIT'."
+            },
+            7: {
+                title: "Colecciones de componentes (Personalizado)",
+                desc: "Nueva sección agregada en el menú izquierdo que centraliza los fragmentos de código, diálogos repetibles y variables reutilizables en múltiples agentes organizacionales.",
+                benefit: "Promueve la modularidad y evita tener que rediseñar el mismo componente lógico para diferentes bots.",
+                example: "Guardar una colección de autenticación corporativa para reutilizarla en el bot de RRHH y el de Auditoría."
+            },
+            8: {
+                title: "Módulo de Soluciones (Gestión de Ciclo de Vida)",
+                desc: "Sección avanzada añadida en el panel de navegación para empaquetar agentes, flujos y tablas de datos con el fin de transportarlos entre entornos (Desarrollo, Pruebas y Producción).",
+                benefit: "Garantiza el cumplimiento de metodologías Scrum y buenas prácticas de gobierno tecnológico en la entidad.",
+                example: "Exportar la solución completa del 'Asistente de Cuentas' desde el ambiente de pruebas hacia producción."
+            }
+        };
+
+        const modal = document.getElementById('fluent-modal');
+        const mTitle = document.getElementById('m-title');
+        const mDesc = document.getElementById('m-desc');
+        const mBenefit = document.getElementById('m-benefit');
+        const mExample = document.getElementById('m-example');
+        
+        const btnNext = document.getElementById('m-next');
+        const btnPrev = document.getElementById('m-prev');
+        const btnClose = document.getElementById('m-close');
+        
+        let activeIndex = 1;
+        let isGuided = false;
+
+        // Renderizar la leyenda dinámica inferior
+        const legendGrid = document.getElementById('legend-grid-container');
+        function initLegend() {
+            for(let key in tourSteps) {
+                const item = tourSteps[key];
+                const box = document.createElement('div');
+                box.className = 'legend-item-box';
+                box.innerHTML = `
+                    <div class="legend-index-circle">${key}</div>
+                    <div class="legend-item-text">
+                        <h4>${item.title}</h4>
+                        <p>${item.desc.substring(0, 65)}...</p>
+                    </div>
+                `;
+                box.onclick = () => openStep(parseInt(key));
+                legendGrid.appendChild(box);
+            }
+        }
+
+        function openStep(id) {
+            activeIndex = id;
+            const data = tourSteps[id];
+            if(!data) return;
+
+            mTitle.innerHTML = `<i class="fa-solid fa-circle-info" style="color:#0047BB;"></i> Componente ${id}: ${data.title}`;
+            mDesc.textContent = data.desc;
+            mBenefit.textContent = data.benefit;
+            mExample.textContent = data.example;
+
+            // Mostrar u ocultar controles
+            btnPrev.style.visibility = id > 1 ? "visible" : "hidden";
+            btnNext.innerHTML = id < Object.keys(tourSteps).length ? 'Siguiente <i class="fa-solid fa-arrow-right"></i>' : 'Terminar';
+
+            // Resaltar marcadores visuales correspondientes
+            document.querySelectorAll('.interactive-badge').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll(`[data-target="${id}"]`).forEach(el => {
+                if(el.classList.contains('interactive-badge')) el.classList.add('active');
+            });
+
+            modal.classList.add('open');
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            document.querySelectorAll('.interactive-badge').forEach(b => b.classList.remove('active'));
+        }
+
+        // Acciones del Modal
+        btnNext.onclick = () => {
+            if(activeIndex < Object.keys(tourSteps).length) {
+                openStep(activeIndex + 1);
+            } else {
+                closeModal();
+            }
+        };
+
+        btnPrev.onclick = () => {
+            if(activeIndex > 1) {
+                openStep(activeIndex - 1);
+            }
+        };
+
+        btnClose.onclick = closeModal;
+
+        // Marcadores flotantes asignación de clicks
+        document.querySelectorAll('.interactive-badge').forEach(badge => {
+            badge.onclick = (e) => {
+                e.stopPropagation();
+                const targetId = badge.getAttribute('data-target');
+                if(targetId) openStep(parseInt(targetId));
+            };
+        });
+
+        // Botón de inicio de recorrido guiado
+        document.getElementById('btn-start-guided').onclick = () => {
+            openStep(1);
+        };
+
+        window.onload = () => {
+            initLegend();
+        };
+    </script>
+</body>
+</html>
