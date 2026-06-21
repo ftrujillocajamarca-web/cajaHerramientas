@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copilot Studio · Casos de uso</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+      background: #eef4fa;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+    }
+    .carousel-wrapper {
+      max-width: 1100px;
+      width: 100%;
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(6px);
+      border-radius: 28px;
+      box-shadow: 0 16px 36px -10px rgba(0,60,120,0.18);
+      padding: 14px 20px 16px;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+    .carousel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(15,108,189,0.08);
+    }
+    .logo-copilot { display: flex; align-items: center; gap: 8px; }
+    .logo-icon svg { height: 30px; width: auto; }
+    .logo-text {
+      font-weight: 600;
+      font-size: 1.05rem;
+      background: linear-gradient(145deg, #005A9E, #0F6CBD);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .logo-text span { font-weight: 300; color: #006E8A; background: none; -webkit-background-clip: unset; background-clip: unset; }
+    .slide-indicator { display: flex; gap: 6px; align-items: center; }
+    .dot {
+      width: 8px; height: 8px; border-radius: 20px;
+      background: #d0dbe8; transition: all 0.3s ease; cursor: pointer;
+    }
+    .dot.active {
+      background: #0F6CBD;
+      width: 20px;
+      background: linear-gradient(135deg, #0F6CBD, #49D3D0);
+      box-shadow: 0 0 8px rgba(73,211,208,0.25);
+    }
+    .slides-container {
+      position: relative;
+      min-height: 230px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.15);
+      padding: 3px;
+      margin-bottom: 8px;
+    }
+    .slides-track {
+      display: flex;
+      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      will-change: transform;
+    }
+    .slide {
+      flex: 0 0 100%;
+      padding: 12px 18px 14px;
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(4px);
+      border-radius: 18px;
+      box-shadow: 0 2px 10px rgba(0,50,100,0.03);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: center;
+      min-height: 200px;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+    .slide-content { display: flex; flex-direction: column; gap: 4px; }
+    .slide-number {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 1.2px;
+      color: #006E8A;
+      background: rgba(73,211,208,0.12);
+      display: inline-block; padding: 2px 10px; border-radius: 30px;
+      width: fit-content;
+      border: 1px solid rgba(73,211,208,0.12);
+    }
+    .slide-title {
+      font-size: 1.3rem; font-weight: 700; line-height: 1.15;
+      background: linear-gradient(145deg, #005A9E, #0F6CBD);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      margin: 1px 0 1px;
+      letter-spacing: -0.2px;
+    }
+    .slide-desc {
+      font-size: 0.78rem; color: #1e2e3f; opacity: 0.8; line-height: 1.3;
+      max-width: 98%;
+    }
+    .slide-example {
+      background: rgba(15,108,189,0.04);
+      padding: 5px 12px; border-radius: 12px;
+      border-left: 4px solid #49D3D0;
+      font-size: 0.75rem; color: #003b6a;
+      margin-top: 1px;
+    }
+    .slide-example i { color: #0F6CBD; margin-right: 6px; }
+    .highlight-benefit {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(73,211,208,0.07);
+      padding: 4px 12px; border-radius: 30px;
+      font-weight: 500; color: #005A9E;
+      border: 1px solid rgba(73,211,208,0.12);
+      width: fit-content; font-size: 0.75rem;
+    }
+    .highlight-benefit i { color: #006E8A; font-size: 0.9rem; }
+    .icon-group { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 2px; }
+    .icon-group i {
+      font-size: 1.1rem; color: #0F6CBD;
+      background: rgba(255,255,255,0.4);
+      padding: 4px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .slide-visual {
+      display: flex; justify-content: center; align-items: center;
+      background: radial-gradient(circle at 30% 40%, rgba(73,211,208,0.05), rgba(15,108,189,0.01));
+      border-radius: 16px;
+      padding: 4px;
+      min-height: 120px;
+    }
+    .visual-svg { width: 100%; max-width: 220px; height: auto; }
+    .visual-svg svg { width: 100%; height: auto; display: block; }
+    .slide-inicio .slide-title { font-size: 1.5rem; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #005A9E, #0F6CBD);
+      border: none; color: white; font-weight: 600;
+      padding: 7px 22px; border-radius: 60px; font-size: 0.8rem;
+      display: inline-flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 12px -4px rgba(0,90,158,0.2);
+      transition: all 0.2s ease; cursor: pointer;
+      margin-top: 2px; border: 1px solid rgba(255,255,255,0.15);
+      width: fit-content;
+    }
+    .btn-primary:hover { transform: scale(1.02); box-shadow: 0 8px 18px -6px rgba(0,90,158,0.3); }
+    .btn-primary i { transition: transform 0.2s; }
+    .btn-primary:hover i { transform: translateX(4px); }
+
+    .carousel-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 2px;
+    }
+    .nav-buttons { display: flex; gap: 8px; align-items: center; }
+    .nav-btn {
+      background: white; border: 1px solid rgba(15,108,189,0.06);
+      color: #0F6CBD; width: 34px; height: 34px;
+      border-radius: 50px; display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; box-shadow: 0 2px 6px rgba(0,50,100,0.03);
+      transition: all 0.2s ease; cursor: pointer;
+      backdrop-filter: blur(4px); background: rgba(255,255,255,0.5);
+    }
+    .nav-btn:hover { background: #0F6CBD; color: white; border-color: #0F6CBD; transform: translateY(-1px); }
+    .btn-home {
+      background: linear-gradient(135deg, #005A9E, #49D3D0);
+      border: none; color: white; width: 34px; height: 34px;
+      border-radius: 50px; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,90,158,0.18);
+      transition: all 0.2s ease; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btn-home:hover { transform: scale(1.04) translateY(-1px); box-shadow: 0 8px 16px -4px rgba(0,90,158,0.25); }
+    .slide-counter {
+      font-size: 0.7rem; color: #005A9E; font-weight: 500;
+      background: rgba(255,255,255,0.3); padding: 2px 12px; border-radius: 30px;
+      backdrop-filter: blur(2px);
+    }
+
+    /* Simulaciones */
+    .chat-simulation, .search-simulation, .process-simulation, .team-simulation {
+      width: 100%; max-width: 230px;
+      background: white; border-radius: 14px; padding: 10px;
+      box-shadow: 0 3px 12px rgba(0,60,120,0.06);
+      border: 1px solid rgba(15,108,189,0.06);
+    }
+    .chat-message { display: flex; margin-bottom: 6px; gap: 8px; align-items: flex-start; }
+    .chat-message.user { justify-content: flex-end; }
+    .chat-message.user .message-bubble {
+      background: linear-gradient(135deg, #0F6CBD, #005A9E);
+      color: white; border-radius: 14px 14px 4px 14px;
+      padding: 5px 10px; max-width: 85%; font-size: 0.7rem; line-height: 1.3;
+    }
+    .chat-message.agent .message-bubble {
+      background: #f0f7ff; color: #1e2e3f;
+      border: 1px solid rgba(15,108,189,0.06);
+      border-radius: 14px 14px 14px 4px;
+      padding: 5px 10px; max-width: 85%; font-size: 0.7rem; line-height: 1.3;
+    }
+    .chat-message .avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 0.6rem;
+    }
+    .chat-message.user .avatar { background: linear-gradient(135deg, #0F6CBD, #005A9E); color: white; order: 1; }
+    .chat-message.agent .avatar { background: linear-gradient(135deg, #49D3D0, #006E8A); color: white; }
+    .chat-message .avatar i { font-size: 0.6rem; }
+    .chat-message .message-content { display: flex; flex-direction: column; }
+    .chat-message .message-sender { font-size: 0.5rem; font-weight: 600; color: #006E8A; margin-bottom: 1px; }
+    .chat-message.user .message-sender { text-align: right; color: #0F6CBD; }
+    .chat-footer {
+      display: flex; gap: 4px; align-items: center;
+      margin-top: 4px; padding-top: 6px;
+      border-top: 1px solid rgba(15,108,189,0.05);
+    }
+    .chat-footer .typing-indicator {
+      display: flex; gap: 3px; align-items: center;
+      font-size: 0.6rem; color: #006E8A;
+    }
+    .chat-footer .typing-indicator span {
+      display: inline-block; width: 5px; height: 5px;
+      border-radius: 50%; background: #49D3D0;
+      animation: typing 1.4s infinite both;
+    }
+    .chat-footer .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .chat-footer .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+    .chat-footer .sharepoint-badge {
+      display: flex; align-items: center; gap: 3px;
+      background: rgba(15,108,189,0.05); padding: 2px 8px;
+      border-radius: 10px; font-size: 0.55rem; color: #005A9E;
+      margin-left: auto;
+    }
+    .chat-footer .sharepoint-badge i { font-size: 0.55rem; }
+
+    .search-header {
+      display: flex; align-items: center; gap: 6px;
+      background: #f0f7ff; padding: 4px 10px; border-radius: 8px;
+      margin-bottom: 8px; border: 1px solid rgba(15,108,189,0.04);
+    }
+    .search-header i { color: #0F6CBD; font-size: 0.7rem; }
+    .search-header span { font-size: 0.6rem; color: #005A9E; font-weight: 500; }
+    .search-results { display: flex; flex-direction: column; gap: 5px; }
+    .search-result {
+      display: flex; align-items: center; gap: 7px;
+      padding: 4px 8px; background: #f8faff;
+      border-radius: 6px; border-left: 3px solid #49D3D0;
+    }
+    .search-result .doc-icon { color: #0F6CBD; font-size: 0.75rem; opacity: 0.6; }
+    .search-result .doc-info { flex: 1; }
+    .search-result .doc-title { font-size: 0.65rem; font-weight: 600; color: #1e2e3f; }
+    .search-result .doc-meta { font-size: 0.5rem; color: #006E8A; opacity: 0.7; }
+    .search-result .doc-match {
+      background: rgba(73,211,208,0.1); padding: 1px 6px;
+      border-radius: 8px; font-size: 0.5rem; color: #006E8A; font-weight: 600;
+    }
+    .search-result.highlight { border-left-color: #0F6CBD; background: rgba(15,108,189,0.03); }
+    .search-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 6px; padding-top: 6px;
+      border-top: 1px solid rgba(15,108,189,0.05);
+    }
+    .search-footer .source-badge { display: flex; align-items: center; gap: 3px; font-size: 0.55rem; color: #005A9E; }
+    .search-footer .source-badge i { font-size: 0.55rem; color: #0F6CBD; }
+    .search-footer .result-count { font-size: 0.55rem; color: #006E8A; font-weight: 500; }
+
+    .process-header {
+      display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+    }
+    .process-header .status-badge {
+      display: flex; align-items: center; gap: 4px;
+      background: rgba(73,211,208,0.1); padding: 3px 10px;
+      border-radius: 16px; font-size: 0.55rem; color: #006E8A; font-weight: 600;
+    }
+    .process-header .status-badge i { color: #49D3D0; font-size: 0.5rem; }
+    .process-flow { display: flex; flex-direction: column; gap: 4px; margin: 4px 0; }
+    .process-step {
+      display: flex; align-items: center; gap: 7px;
+      padding: 4px 8px; background: #f8faff;
+      border-radius: 8px; border: 1px solid rgba(15,108,189,0.04);
+    }
+    .process-step .step-icon {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.55rem; flex-shrink: 0;
+    }
+    .process-step .step-icon.pending { background: rgba(15,108,189,0.06); color: #0F6CBD; }
+    .process-step .step-icon.completed { background: rgba(73,211,208,0.12); color: #006E8A; }
+    .process-step .step-icon.active { background: linear-gradient(135deg, #0F6CBD, #49D3D0); color: white; }
+    .process-step .step-info { flex: 1; }
+    .process-step .step-title { font-size: 0.65rem; font-weight: 600; color: #1e2e3f; }
+    .process-step .step-desc { font-size: 0.5rem; color: #006E8A; opacity: 0.7; }
+    .process-step .step-status {
+      font-size: 0.5rem; font-weight: 600; padding: 1px 6px; border-radius: 8px;
+    }
+    .process-step .step-status.success { background: rgba(73,211,208,0.1); color: #006E8A; }
+    .process-step .step-status.pending { background: rgba(15,108,189,0.06); color: #0F6CBD; }
+    .process-step .step-status.in-progress { background: rgba(73,211,208,0.15); color: #005A9E; }
+    .process-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 6px; padding-top: 6px;
+      border-top: 1px solid rgba(15,108,189,0.05);
+    }
+    .process-footer .system-badge { display: flex; align-items: center; gap: 4px; font-size: 0.55rem; color: #005A9E; }
+    .process-footer .system-badge i { color: #0F6CBD; }
+    .process-footer .time-badge { font-size: 0.55rem; color: #006E8A; font-weight: 500; }
+
+    .team-header {
+      display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+    }
+    .team-header .meeting-badge {
+      display: flex; align-items: center; gap: 4px;
+      background: rgba(15,108,189,0.06); padding: 3px 10px;
+      border-radius: 16px; font-size: 0.55rem; color: #0F6CBD; font-weight: 600;
+    }
+    .team-header .meeting-badge i { color: #49D3D0; }
+    .team-members { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
+    .team-member {
+      display: flex; align-items: center; gap: 4px;
+      background: #f8faff; padding: 2px 8px 2px 4px;
+      border-radius: 16px; border: 1px solid rgba(15,108,189,0.04);
+    }
+    .team-member .member-avatar {
+      width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.5rem; color: white; font-weight: 600;
+    }
+    .team-member .member-avatar.blue { background: linear-gradient(135deg, #0F6CBD, #005A9E); }
+    .team-member .member-avatar.teal { background: linear-gradient(135deg, #49D3D0, #006E8A); }
+    .team-member .member-avatar.purple { background: linear-gradient(135deg, #4FA3E3, #0F6CBD); }
+    .team-member .member-avatar.green { background: linear-gradient(135deg, #A9E6E5, #006E8A); }
+    .team-member .member-name { font-size: 0.5rem; color: #1e2e3f; font-weight: 500; }
+    .team-tasks { display: flex; flex-direction: column; gap: 4px; margin: 4px 0; }
+    .team-task {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 8px; background: #f8faff;
+      border-radius: 6px; border-left: 3px solid #49D3D0;
+    }
+    .team-task .task-check { color: #49D3D0; font-size: 0.6rem; }
+    .team-task .task-info { flex: 1; }
+    .team-task .task-title { font-size: 0.6rem; font-weight: 500; color: #1e2e3f; }
+    .team-task .task-assignee { font-size: 0.5rem; color: #006E8A; opacity: 0.7; }
+    .team-task .task-priority {
+      font-size: 0.45rem; font-weight: 600; padding: 1px 6px; border-radius: 8px;
+    }
+    .team-task .task-priority.high { background: rgba(73,211,208,0.12); color: #006E8A; }
+    .team-task .task-priority.medium { background: rgba(15,108,189,0.06); color: #0F6CBD; }
+    .team-task.completed { border-left-color: #A9E6E5; opacity: 0.6; }
+    .team-task.completed .task-check { color: #A9E6E5; }
+    .team-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 6px; padding-top: 6px;
+      border-top: 1px solid rgba(15,108,189,0.05);
+    }
+    .team-footer .planner-badge { display: flex; align-items: center; gap: 4px; font-size: 0.55rem; color: #005A9E; }
+    .team-footer .planner-badge i { color: #0F6CBD; }
+    .team-footer .task-count { font-size: 0.55rem; color: #006E8A; font-weight: 500; }
+
+    @media (max-width: 750px) {
+      .slide { grid-template-columns: 1fr; gap: 10px; padding: 10px 14px; min-height: auto; }
+      .slide-title { font-size: 1.1rem; }
+      .slide-inicio .slide-title { font-size: 1.2rem; }
+      .slide-desc { max-width: 100%; }
+      .slide-visual { order: -1; min-height: 90px; padding: 2px; }
+      .visual-svg { max-width: 160px; }
+      .chat-simulation, .search-simulation, .process-simulation, .team-simulation { max-width: 180px; padding: 8px; }
+      .logo-text { font-size: 0.9rem; }
+      .logo-icon svg { height: 24px; }
+    }
+    @media (max-width: 480px) {
+      .carousel-wrapper { padding: 10px 10px; }
+      .slide-title { font-size: 1rem; }
+      .btn-primary { padding: 5px 16px; font-size: 0.7rem; }
+      .nav-btn, .btn-home { width: 30px; height: 30px; font-size: 0.85rem; }
+      .icon-group i { font-size: 0.9rem; padding: 3px; }
+      .slide-example { font-size: 0.65rem; padding: 4px 8px; }
+      .highlight-benefit { font-size: 0.65rem; padding: 3px 8px; }
+      .chat-simulation, .search-simulation, .process-simulation, .team-simulation { max-width: 160px; padding: 6px; }
+      .chat-message .message-bubble { font-size: 0.6rem; padding: 4px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="carousel-wrapper">
+    <div class="carousel-header">
+      <div class="logo-copilot">
+        <div class="logo-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="12" width="14" height="14" rx="6" fill="#0F6CBD" opacity="0.9"/>
+            <rect x="18" y="20" width="14" height="14" rx="6" fill="#006E8A" opacity="0.8"/>
+            <rect x="12" y="28" width="14" height="14" rx="6" fill="#49D3D0" opacity="0.7"/>
+            <rect x="24" y="8" width="14" height="14" rx="6" fill="#4FA3E3" opacity="0.5"/>
+            <circle cx="34" cy="34" r="6" fill="#005A9E" opacity="0.6"/>
+            <circle cx="10" cy="38" r="4" fill="#A9E6E5" opacity="0.5"/>
+          </svg>
+        </div>
+        <span class="logo-text">Copilot <span>Studio</span></span>
+      </div>
+      <div class="slide-indicator" id="dotContainer">
+        <span class="dot active" data-index="0"></span>
+        <span class="dot" data-index="1"></span>
+        <span class="dot" data-index="2"></span>
+        <span class="dot" data-index="3"></span>
+        <span class="dot" data-index="4"></span>
+      </div>
+    </div>
+
+    <div class="slides-container">
+      <div class="slides-track" id="slidesTrack">
+        <!-- SLIDE 1 - INICIO -->
+        <div class="slide slide-inicio" data-index="0">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-rocket" style="margin-right:4px;"></i> Bienvenido</span>
+            <h2 class="slide-title">Casos de uso más comunes de Copilot Studio</h2>
+            <p class="slide-desc">Descubre cómo los agentes inteligentes pueden ayudarte a responder preguntas, encontrar información, automatizar procesos y aumentar la productividad de tu equipo.</p>
+            <div class="slide-example" style="border-left-color:#0F6CBD;">
+              <i class="fas fa-lightbulb"></i> Los agentes de Copilot Studio permiten crear experiencias inteligentes que ayudan a las personas a trabajar de forma más rápida y eficiente.
+            </div>
+            <div class="icon-group">
+              <i class="fas fa-brain"></i><i class="fas fa-chart-line"></i><i class="fas fa-robot"></i><i class="fas fa-database"></i>
+            </div>
+            <button class="btn-primary" id="startBtn">Comenzar →</button>
+          </div>
+          <div class="slide-visual">
+            <div class="visual-svg">
+              <svg viewBox="0 0 240 140" fill="none">
+                <circle cx="60" cy="60" r="24" fill="#0F6CBD" opacity="0.07"/>
+                <circle cx="160" cy="70" r="20" fill="#49D3D0" opacity="0.08"/>
+                <rect x="45" y="38" width="70" height="45" rx="10" fill="#005A9E" opacity="0.04"/>
+                <rect x="110" y="55" width="45" height="30" rx="8" fill="#006E8A" opacity="0.04"/>
+                <path d="M50 88 L75 100 L100 82 L125 95 L145 75" stroke="#0F6CBD" stroke-width="2" stroke-dasharray="4 4" opacity="0.25"/>
+                <circle cx="50" cy="88" r="4" fill="#49D3D0"/>
+                <circle cx="100" cy="82" r="4" fill="#49D3D0"/>
+                <circle cx="145" cy="75" r="4" fill="#49D3D0"/>
+                <text x="70" y="128" font-size="9" fill="#005A9E" font-weight="500">IA · Datos · Automatización</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 2 - CASO 01 -->
+        <div class="slide" data-index="1">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-hashtag"></i> 01</span>
+            <h2 class="slide-title">Atención de preguntas frecuentes</h2>
+            <p class="slide-desc">Permite que un agente responda automáticamente las preguntas más comunes para que las personas encuentren respuestas rápidamente.</p>
+            <div class="slide-example"><i class="fas fa-users"></i> Un agente de Recursos Humanos responde preguntas sobre beneficios, vacaciones y políticas utilizando información almacenada en SharePoint.</div>
+            <div class="highlight-benefit"><i class="fas fa-clock"></i> Ahorra tiempo y mejora la experiencia.</div>
+            <div class="icon-group">
+              <i class="fas fa-comment-dots"></i><i class="fas fa-headset"></i><i class="fas fa-question-circle"></i><i class="fas fa-share-alt"></i>
+            </div>
+          </div>
+          <div class="slide-visual">
+            <div class="chat-simulation">
+              <div class="chat-message user">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div class="message-content">
+                  <div class="message-sender">Tú</div>
+                  <div class="message-bubble">¿Cuántos días de vacaciones tengo?</div>
+                </div>
+              </div>
+              <div class="chat-message agent">
+                <div class="avatar"><i class="fas fa-robot"></i></div>
+                <div class="message-content">
+                  <div class="message-sender">Agente de RH</div>
+                  <div class="message-bubble">Tienes 15 días hábiles según SharePoint.</div>
+                </div>
+              </div>
+              <div class="chat-footer">
+                <div class="typing-indicator"><span></span><span></span><span></span><span style="margin-left:3px;font-weight:400;">escribiendo...</span></div>
+                <div class="sharepoint-badge"><i class="fas fa-share-alt"></i> SharePoint</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 3 - CASO 02 -->
+        <div class="slide" data-index="2">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-hashtag"></i> 02</span>
+            <h2 class="slide-title">Consulta de información interna</h2>
+            <p class="slide-desc">Encuentra información importante en segundos utilizando agentes que buscan en documentos, correos electrónicos y fuentes de conocimiento.</p>
+            <div class="slide-example"><i class="fas fa-gavel"></i> Un agente localiza información relevante entre miles de documentos legales y responde consultas específicas.</div>
+            <div class="highlight-benefit"><i class="fas fa-search"></i> Reduce el tiempo de búsqueda.</div>
+            <div class="icon-group">
+              <i class="fas fa-search"></i><i class="fas fa-file-alt"></i><i class="fas fa-database"></i><i class="fas fa-network-wired"></i>
+            </div>
+          </div>
+          <div class="slide-visual">
+            <div class="search-simulation">
+              <div class="search-header"><i class="fas fa-search"></i><span>Búsqueda inteligente</span></div>
+              <div class="search-results">
+                <div class="search-result highlight">
+                  <div class="doc-icon"><i class="fas fa-file-pdf"></i></div>
+                  <div class="doc-info"><div class="doc-title">Contrato_2025_Cláusulas_Legales.pdf</div><div class="doc-meta">SharePoint · hace 2d</div></div>
+                  <div class="doc-match">92%</div>
+                </div>
+                <div class="search-result">
+                  <div class="doc-icon"><i class="fas fa-file-word"></i></div>
+                  <div class="doc-info"><div class="doc-title">Política_de_Privacidad_2025.docx</div><div class="doc-meta">OneDrive · hace 5d</div></div>
+                  <div class="doc-match">78%</div>
+                </div>
+                <div class="search-result">
+                  <div class="doc-icon"><i class="fas fa-file-alt"></i></div>
+                  <div class="doc-info"><div class="doc-title">Reglamento_Interno_2025.pdf</div><div class="doc-meta">SharePoint · hace 1s</div></div>
+                  <div class="doc-match">65%</div>
+                </div>
+              </div>
+              <div class="search-footer">
+                <div class="source-badge"><i class="fas fa-share-alt"></i> SharePoint <i class="fas fa-cloud" style="margin-left:4px;"></i> OneDrive</div>
+                <div class="result-count">3 resultados</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 4 - CASO 03 -->
+        <div class="slide" data-index="3">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-hashtag"></i> 03</span>
+            <h2 class="slide-title">Soporte a procesos de negocio</h2>
+            <p class="slide-desc">Automatiza actividades repetitivas y conecta distintos sistemas para ejecutar procesos empresariales de forma eficiente.</p>
+            <div class="slide-example"><i class="fas fa-file-invoice"></i> Un agente procesa facturas automáticamente, valida información y genera aprobaciones sin intervención manual.</div>
+            <div class="highlight-benefit"><i class="fas fa-bolt"></i> Mayor eficiencia y reducción de tareas repetitivas.</div>
+            <div class="icon-group">
+              <i class="fas fa-cogs"></i><i class="fas fa-file-invoice"></i><i class="fas fa-check-circle"></i><i class="fas fa-plug"></i>
+            </div>
+          </div>
+          <div class="slide-visual">
+            <div class="process-simulation">
+              <div class="process-header"><div class="status-badge"><i class="fas fa-play-circle"></i> Proceso en ejecución</div></div>
+              <div class="process-flow">
+                <div class="process-step">
+                  <div class="step-icon completed"><i class="fas fa-check"></i></div>
+                  <div class="step-info"><div class="step-title">Recepción de factura</div><div class="step-desc">Documento recibido desde correo</div></div>
+                  <div class="step-status success">Completado</div>
+                </div>
+                <div class="process-step">
+                  <div class="step-icon completed"><i class="fas fa-check"></i></div>
+                  <div class="step-info"><div class="step-title">Validación automática</div><div class="step-desc">Verificación de datos y formato</div></div>
+                  <div class="step-status success">Completado</div>
+                </div>
+                <div class="process-step">
+                  <div class="step-icon active"><i class="fas fa-spinner fa-pulse"></i></div>
+                  <div class="step-info"><div class="step-title">Aprobación en flujo</div><div class="step-desc">Enviado a aprobadores</div></div>
+                  <div class="step-status in-progress">En proceso</div>
+                </div>
+                <div class="process-step">
+                  <div class="step-icon pending"><i class="fas fa-clock"></i></div>
+                  <div class="step-info"><div class="step-title">Registro contable</div><div class="step-desc">Integración con ERP</div></div>
+                  <div class="step-status pending">Pendiente</div>
+                </div>
+              </div>
+              <div class="process-footer">
+                <div class="system-badge"><i class="fas fa-plug"></i> Power Automate <i class="fas fa-arrow-right" style="margin-left:3px;"></i> <i class="fas fa-database" style="margin-left:3px;"></i> SAP</div>
+                <div class="time-badge"><i class="far fa-clock"></i> 2 min</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 5 - CASO 04 -->
+        <div class="slide" data-index="4">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-hashtag"></i> 04</span>
+            <h2 class="slide-title">Asistencia a equipos de trabajo</h2>
+            <p class="slide-desc">Mejora la colaboración ayudando a los equipos a organizar reuniones, tareas y actividades de seguimiento.</p>
+            <div class="slide-example"><i class="fas fa-users-cog"></i> Un agente resume reuniones, identifica compromisos y crea tareas automáticamente en Planner.</div>
+            <div class="highlight-benefit"><i class="fas fa-chart-pie"></i> Incrementa la productividad y facilita el trabajo en equipo.</div>
+            <div class="icon-group">
+              <i class="fab fa-microsoft"></i><i class="fas fa-tasks"></i><i class="fas fa-calendar-check"></i><i class="fas fa-handshake"></i>
+            </div>
+          </div>
+          <div class="slide-visual">
+            <div class="team-simulation">
+              <div class="team-header"><div class="meeting-badge"><i class="fas fa-video"></i> Reunión semanal</div></div>
+              <div class="team-members">
+                <div class="team-member"><div class="member-avatar blue">JD</div><span class="member-name">Juan D.</span></div>
+                <div class="team-member"><div class="member-avatar teal">MG</div><span class="member-name">María G.</span></div>
+                <div class="team-member"><div class="member-avatar purple">CR</div><span class="member-name">Carlos R.</span></div>
+                <div class="team-member"><div class="member-avatar green">AL</div><span class="member-name">Ana L.</span></div>
+              </div>
+              <div class="team-tasks">
+                <div class="team-task completed">
+                  <div class="task-check"><i class="fas fa-check-circle"></i></div>
+                  <div class="task-info"><div class="task-title">Revisión de informe mensual</div><div class="task-assignee">Juan D.</div></div>
+                  <div class="task-priority high">Alta</div>
+                </div>
+                <div class="team-task">
+                  <div class="task-check"><i class="far fa-circle"></i></div>
+                  <div class="task-info"><div class="task-title">Preparar presentación para cliente</div><div class="task-assignee">María G.</div></div>
+                  <div class="task-priority high">Alta</div>
+                </div>
+                <div class="team-task">
+                  <div class="task-check"><i class="far fa-circle"></i></div>
+                  <div class="task-info"><div class="task-title">Actualizar documentación técnica</div><div class="task-assignee">Carlos R.</div></div>
+                  <div class="task-priority medium">Media</div>
+                </div>
+              </div>
+              <div class="team-footer">
+                <div class="planner-badge"><i class="fas fa-tasks"></i> Microsoft Planner</div>
+                <div class="task-count"><i class="fas fa-list"></i> 3 tareas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="carousel-nav">
+      <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn"><i class="fas fa-chevron-left"></i></button>
+        <button class="nav-btn" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
+        <button class="btn-home" id="homeBtn"><i class="fas fa-home"></i></button>
+      </div>
+      <div class="slide-counter"><span id="slideCounter">1 / 5</span></div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const track = document.getElementById('slidesTrack');
+      const slides = document.querySelectorAll('.slide');
+      const dots = document.querySelectorAll('.dot');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const homeBtn = document.getElementById('homeBtn');
+      const startBtn = document.getElementById('startBtn');
+      const counter = document.getElementById('slideCounter');
+      let currentIndex = 0;
+      const total = slides.length;
+
+      function updateSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= total) index = total - 1;
+        currentIndex = index;
+        track.style.transform = `translateX(-${index * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        counter.textContent = `${index + 1} / ${total}`;
+        homeBtn.style.display = (index === 0) ? 'none' : 'flex';
+      }
+
+      function goTo(index) { if (index >= 0 && index < total) updateSlide(index); }
+      function next() { if (currentIndex < total - 1) goTo(currentIndex + 1); }
+      function prev() { if (currentIndex > 0) goTo(currentIndex - 1); }
+      function home() { goTo(0); }
+
+      prevBtn.addEventListener('click', prev);
+      nextBtn.addEventListener('click', next);
+      homeBtn.addEventListener('click', home);
+      startBtn.addEventListener('click', () => goTo(1));
+      dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+      document.addEventListener('keydown', e => { if (e.key === 'ArrowRight') next(); else if (e.key === 'ArrowLeft') prev(); else if (e.key === 'Home') home(); });
+      updateSlide(0);
+    })();
+  </script>
+</body>
+</html>
