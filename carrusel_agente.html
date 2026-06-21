@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copilot Studio · Componentes de un agente</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+      background: #eef4fa;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+    }
+    .carousel-wrapper {
+      max-width: 1100px;
+      width: 100%;
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(6px);
+      border-radius: 28px;
+      box-shadow: 0 16px 36px -10px rgba(0,60,120,0.18);
+      padding: 14px 20px 16px;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+    .carousel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(15,108,189,0.08);
+    }
+    .logo-copilot { display: flex; align-items: center; gap: 8px; }
+    .logo-icon svg { height: 30px; width: auto; }
+    .logo-text {
+      font-weight: 600;
+      font-size: 1.05rem;
+      background: linear-gradient(145deg, #005A9E, #0F6CBD);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .logo-text span { font-weight: 300; color: #006E8A; background: none; -webkit-background-clip: unset; background-clip: unset; }
+    .slide-indicator { display: flex; gap: 6px; align-items: center; }
+    .dot {
+      width: 8px; height: 8px; border-radius: 20px;
+      background: #d0dbe8; transition: all 0.3s ease; cursor: pointer;
+    }
+    .dot.active {
+      background: #0F6CBD;
+      width: 20px;
+      background: linear-gradient(135deg, #0F6CBD, #49D3D0);
+      box-shadow: 0 0 8px rgba(73,211,208,0.25);
+    }
+    .slides-container {
+      position: relative;
+      min-height: 230px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.15);
+      padding: 3px;
+      margin-bottom: 8px;
+    }
+    .slides-track {
+      display: flex;
+      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      will-change: transform;
+    }
+    .slide {
+      flex: 0 0 100%;
+      padding: 12px 18px 14px;
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(4px);
+      border-radius: 18px;
+      box-shadow: 0 2px 10px rgba(0,50,100,0.03);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: center;
+      min-height: 200px;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+    .slide-content { display: flex; flex-direction: column; gap: 4px; }
+    .slide-number {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 1.2px;
+      color: #006E8A;
+      background: rgba(73,211,208,0.12);
+      display: inline-block; padding: 2px 10px; border-radius: 30px;
+      width: fit-content;
+      border: 1px solid rgba(73,211,208,0.12);
+    }
+    .slide-title {
+      font-size: 1.3rem; font-weight: 700; line-height: 1.15;
+      background: linear-gradient(145deg, #005A9E, #0F6CBD);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      margin: 1px 0 1px;
+      letter-spacing: -0.2px;
+    }
+    .slide-desc {
+      font-size: 0.78rem; color: #1e2e3f; opacity: 0.8; line-height: 1.3;
+      max-width: 98%;
+    }
+    .slide-example {
+      background: rgba(15,108,189,0.04);
+      padding: 5px 12px; border-radius: 12px;
+      border-left: 4px solid #49D3D0;
+      font-size: 0.75rem; color: #003b6a;
+      margin-top: 1px;
+    }
+    .slide-example i { color: #0F6CBD; margin-right: 6px; }
+    .highlight-benefit {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(73,211,208,0.07);
+      padding: 4px 12px; border-radius: 30px;
+      font-weight: 500; color: #005A9E;
+      border: 1px solid rgba(73,211,208,0.12);
+      width: fit-content; font-size: 0.75rem;
+    }
+    .highlight-benefit i { color: #006E8A; font-size: 0.9rem; }
+    .icon-group { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 2px; }
+    .icon-group i {
+      font-size: 1.1rem; color: #0F6CBD;
+      background: rgba(255,255,255,0.4);
+      padding: 4px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .slide-visual {
+      display: flex; justify-content: center; align-items: center;
+      background: radial-gradient(circle at 30% 40%, rgba(73,211,208,0.05), rgba(15,108,189,0.01));
+      border-radius: 16px;
+      padding: 4px;
+      min-height: 120px;
+    }
+    .visual-svg { width: 100%; max-width: 220px; height: auto; }
+    .visual-svg svg { width: 100%; height: auto; display: block; }
+    .slide-inicio .slide-title { font-size: 1.5rem; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #005A9E, #0F6CBD);
+      border: none; color: white; font-weight: 600;
+      padding: 7px 22px; border-radius: 60px; font-size: 0.8rem;
+      display: inline-flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 12px -4px rgba(0,90,158,0.2);
+      transition: all 0.2s ease; cursor: pointer;
+      margin-top: 2px; border: 1px solid rgba(255,255,255,0.15);
+      width: fit-content;
+    }
+    .btn-primary:hover { transform: scale(1.02); box-shadow: 0 8px 18px -6px rgba(0,90,158,0.3); }
+    .btn-primary i { transition: transform 0.2s; }
+    .btn-primary:hover i { transform: translateX(4px); }
+
+    .carousel-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 2px;
+    }
+    .nav-buttons { display: flex; gap: 8px; align-items: center; }
+    .nav-btn {
+      background: white; border: 1px solid rgba(15,108,189,0.06);
+      color: #0F6CBD; width: 34px; height: 34px;
+      border-radius: 50px; display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; box-shadow: 0 2px 6px rgba(0,50,100,0.03);
+      transition: all 0.2s ease; cursor: pointer;
+      backdrop-filter: blur(4px); background: rgba(255,255,255,0.5);
+    }
+    .nav-btn:hover { background: #0F6CBD; color: white; border-color: #0F6CBD; transform: translateY(-1px); }
+    .btn-home {
+      background: linear-gradient(135deg, #005A9E, #49D3D0);
+      border: none; color: white; width: 34px; height: 34px;
+      border-radius: 50px; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,90,158,0.18);
+      transition: all 0.2s ease; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btn-home:hover { transform: scale(1.04) translateY(-1px); box-shadow: 0 8px 16px -4px rgba(0,90,158,0.25); }
+    .slide-counter {
+      font-size: 0.7rem; color: #005A9E; font-weight: 500;
+      background: rgba(255,255,255,0.3); padding: 2px 12px; border-radius: 30px;
+      backdrop-filter: blur(2px);
+    }
+
+    /* Estilos para componentes */
+    .component-card {
+      background: rgba(255,255,255,0.5);
+      padding: 6px 12px;
+      border-radius: 10px;
+      border-left: 4px solid #49D3D0;
+      margin: 3px 0;
+    }
+    .component-card .comp-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #005A9E;
+    }
+    .component-card .comp-desc {
+      font-size: 0.65rem;
+      color: #1e2e3f;
+      opacity: 0.8;
+    }
+    .component-card .comp-icon {
+      color: #0F6CBD;
+      margin-right: 6px;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    .comparison-item {
+      background: rgba(255,255,255,0.5);
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(15,108,189,0.06);
+    }
+    .comparison-item .item-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #005A9E;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .comparison-item .item-title i { color: #49D3D0; }
+    .comparison-item .item-desc {
+      font-size: 0.6rem;
+      color: #1e2e3f;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+    .comparison-item .item-badge {
+      display: inline-block;
+      font-size: 0.5rem;
+      font-weight: 600;
+      padding: 1px 8px;
+      border-radius: 10px;
+      background: rgba(73,211,208,0.12);
+      color: #006E8A;
+      margin-top: 2px;
+    }
+
+    .topic-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(15,108,189,0.06);
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.6rem;
+      color: #005A9E;
+      margin: 2px 4px 2px 0;
+    }
+    .topic-badge i { color: #49D3D0; font-size: 0.5rem; }
+
+    @media (max-width: 750px) {
+      .slide { grid-template-columns: 1fr; gap: 10px; padding: 10px 14px; min-height: auto; }
+      .slide-title { font-size: 1.1rem; }
+      .slide-inicio .slide-title { font-size: 1.2rem; }
+      .slide-desc { max-width: 100%; }
+      .slide-visual { order: -1; min-height: 90px; padding: 2px; }
+      .visual-svg { max-width: 160px; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .logo-text { font-size: 0.9rem; }
+      .logo-icon svg { height: 24px; }
+    }
+    @media (max-width: 480px) {
+      .carousel-wrapper { padding: 10px 10px; }
+      .slide-title { font-size: 1rem; }
+      .btn-primary { padding: 5px 16px; font-size: 0.7rem; }
+      .nav-btn, .btn-home { width: 30px; height: 30px; font-size: 0.85rem; }
+      .icon-group i { font-size: 0.9rem; padding: 3px; }
+      .slide-example { font-size: 0.65rem; padding: 4px 8px; }
+      .highlight-benefit { font-size: 0.65rem; padding: 3px 8px; }
+      .component-card .comp-title { font-size: 0.65rem; }
+      .component-card .comp-desc { font-size: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="carousel-wrapper">
+    <div class="carousel-header">
+      <div class="logo-copilot">
+        <div class="logo-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="12" width="14" height="14" rx="6" fill="#0F6CBD" opacity="0.9"/>
+            <rect x="18" y="20" width="14" height="14" rx="6" fill="#006E8A" opacity="0.8"/>
+            <rect x="12" y="28" width="14" height="14" rx="6" fill="#49D3D0" opacity="0.7"/>
+            <rect x="24" y="8" width="14" height="14" rx="6" fill="#4FA3E3" opacity="0.5"/>
+            <circle cx="34" cy="34" r="6" fill="#005A9E" opacity="0.6"/>
+            <circle cx="10" cy="38" r="4" fill="#A9E6E5" opacity="0.5"/>
+          </svg>
+        </div>
+        <span class="logo-text">Copilot <span>Studio</span></span>
+      </div>
+      <div class="slide-indicator" id="dotContainer">
+        <span class="dot active" data-index="0"></span>
+        <span class="dot" data-index="1"></span>
+        <span class="dot" data-index="2"></span>
+        <span class="dot" data-index="3"></span>
+        <span class="dot" data-index="4"></span>
+        <span class="dot" data-index="5"></span>
+      </div>
+    </div>
+
+    <div class="slides-container">
+      <div class="slides-track" id="slidesTrack">
+        <!-- SLIDE 1 - INICIO -->
+        <div class="slide slide-inicio" data-index="0">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-rocket" style="margin-right:4px;"></i> Bienvenido</span>
+            <h2 class="slide-title">Los componentes principales de un agente</h2>
+            <p class="slide-desc">Un agente está formado por cuatro partes fundamentales que trabajan juntas para crear una experiencia inteligente y útil.</p>
+            <div class="slide-example" style="border-left-color:#0F6CBD;">
+              <i class="fas fa-puzzle-piece"></i> Cada componente es como una pieza de un rompecabezas que, al unirse, crea un asistente digital completo.
+            </div>
+            <div class="icon-group">
+              <i class="fas fa-file-alt"></i><i class="fas fa-brain"></i><i class="fas fa-bolt"></i><i class="fas fa-comments"></i>
+            </div>
+            <button class="btn-primary" id="startBtn">Explorar componentes →</button>
+          </div>
+          <div class="slide-visual">
+            <div class="visual-svg">
+              <svg viewBox="0 0 240 140" fill="none">
+                <circle cx="60" cy="60" r="24" fill="#0F6CBD" opacity="0.07"/>
+                <circle cx="160" cy="70" r="20" fill="#49D3D0" opacity="0.08"/>
+                <rect x="45" y="38" width="70" height="45" rx="10" fill="#005A9E" opacity="0.04"/>
+                <rect x="110" y="55" width="45" height="30" rx="8" fill="#006E8A" opacity="0.04"/>
+                <path d="M50 88 L75 100 L100 82 L125 95 L145 75" stroke="#0F6CBD" stroke-width="2" stroke-dasharray="4 4" opacity="0.25"/>
+                <circle cx="50" cy="88" r="4" fill="#49D3D0"/>
+                <circle cx="100" cy="82" r="4" fill="#49D3D0"/>
+                <circle cx="145" cy="75" r="4" fill="#49D3D0"/>
+                <text x="65" y="128" font-size="9" fill="#005A9E" font-weight="500">Instrucciones · Conocimiento · Acciones · Temas</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 2 - INSTRUCCIONES -->
+        <div class="slide" data-index="1">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-hashtag"></i> 1</span>
+            <h2 class="slide-title">Instrucciones</h2>
+            <p class="slide-desc">El "manual de trabajo" de tu agente. Le dicen quién es, cómo comportarse y qué límites tiene.</p>
+            <div class="component-card">
+              <div class="comp-title"><i class="fas fa-user-tie comp-icon"></i> ¿Quién es?</div>
+              <div class="comp-desc">Define el rol del agente: ¿asistente de RRHH, soporte técnico, o experto en ventas?</div>
+            </div>
+            <div class="component-card" style="border-left-color:#0F6CBD;">
+              <div class="comp-title"><i class="fas fa-smile comp-icon"></i> ¿Cómo debe comportarse?</div>
+              <div class="comp-desc">Establece el tono: ¿formal, amable, directo? Define la personalidad del agente.</div>
+            </div>
+            <div class="component-card" style="border-left-color:#006E8A;">
+              <div class="comp-title"><i class="fas fa-ban comp-icon"></i> ¿Qué puede y no puede hacer?</div>
+              <div class="comp-desc">Establece límites claros para evitar respuestas fuera de contexto.</div>
+            </div>
+            <div class="highlight-benefit" style="margin-top:3px;">
+              <i class="fas fa-lightbulb"></i> Como cuando le explicas a un nuevo compañero cómo quieres que haga su trabajo
+            </div>
+          </div>
+          <div class="slide-visual">
+            <div class="visual-svg">
+              <svg viewBox="0 0 240 140" fill="none">
+                <rect x="30" y="30" width="180" height="80" rx="12" fill="#F0F7FF" stroke="#0F6CBD" stroke-width="1" stroke-dasharray="3 3" opacity="0.3"/>
+                <text x="55" y="55" font-size="10" fill="#005A9E" font-weight="600">📋 Manual de trabajo</text>
+                <text x="55" y="75" font-size="7" fill="#006E8A">• Soy asistente de RRHH</text>
+                <text x="55" y="90" font-size="7" fill="#006E8A">• Soy amable y profesional</text>
+                <text x="55" y="105" font-size="7" fill="#006E8A">• No doy información financiera</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 3 - CONOCIMIENTO -->
+        <div class="slide" data-index="2">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-hashtag"></i> 2</span>
+            <h2 class="slide-title">Conocimiento</h2>
+            <p class="slide-desc">El "cerebro" del agente. Puedes conectarle múltiples fuentes de información.</p>
+            <div class="component-card">
+              <div class="comp-title"><i class="fas fa-folder-open comp-icon"></i> Documentos de SharePoint</div>
+              <div class="comp-desc">Políticas, procedimientos, manuales y documentos internos.</div>
+            </div>
+            <div class="component-card" style="border-left-color:#0F6CBD;">
+              <div class="comp-title"><i class="fas fa-globe comp-icon"></i> Sitios web internos</div>
+              <div class="comp-desc">Intranet, portales y páginas de la empresa.</div>
+            </div>
+            <div class="component-card" style="border-left-color:#006E8A;">
+              <div class="comp-title"><i class="fas fa-database comp-icon"></i> Bases de datos y correos</div>
+              <div class="comp-desc">Sistemas internos, correos electrónicos y otras fuentes.</div>
+            </div>
+            <div class="highlight-benefit" style="margin-top:3px;">
+              <i class="fas fa-brain"></i> Como si se hubiera leído todos los manuales de la empresa
+            </div>
+          </div>
+          <div class="slide-visual">
+            <div class="visual-svg">
+              <svg viewBox="0 0 240 140" fill="none">
+                <rect x="30" y="25" width="50" height="20" rx="4" fill="#0F6CBD" opacity="0.08"/>
+                <rect x="30" y="50" width="50" height="20" rx="4" fill="#006E8A" opacity="0.08"/>
+                <rect x="30" y="75" width="50" height="20" rx="4" fill="#49D3D0" opacity="0.08"/>
+                <rect x="90" y="25" width="50" height="20" rx="4" fill="#0F6CBD" opacity="0.06"/>
+                <rect x="90" y="50" width="50" height="20" rx="4" fill="#006E8A" opacity="0.06"/>
+                <rect x="90" y="75" width="50" height="20" rx="4" fill="#49D3D0" opacity="0.06"/>
+                <rect x="150" y="25" width="50" height="20" rx="4" fill="#0F6CBD" opacity="0.04"/>
+                <rect x="150" y="50" width="50" height="20" rx="4" fill="#006E8A" opacity="0.04"/>
+                <rect x="150" y="75" width="50" height="20" rx="4" fill="#49D3D0" opacity="0.04"/>
+                <text x="70" y="118" font-size="8" fill="#005A9E" font-weight="500">SharePoint · Web · Bases de datos</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 4 - ACCIONES Y TEMAS -->
+        <div class="slide" data-index="3">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-hashtag"></i> 3 y 4</span>
+            <h2 class="slide-title">Acciones y Temas</h2>
+            <p class="slide-desc">Lo que puede hacer el agente y cómo maneja cada situación.</p>
+            <div class="component-card">
+              <div class="comp-title"><i class="fas fa-hand-rock comp-icon"></i> Acciones</div>
+              <div class="comp-desc">Crear tareas en Planner, enviar correos, actualizar bases de datos, conectar con aplicaciones.</div>
+            </div>
+            <div class="component-card" style="border-left-color:#006E8A;">
+              <div class="comp-title"><i class="fas fa-comments comp-icon"></i> Temas o comportamientos</div>
+              <div class="comp-desc">Define cómo responde a diferentes situaciones como "Vacaciones", "Beneficios" o "Incidencias".</div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin:3px 0;">
+              <span class="topic-badge"><i class="fas fa-umbrella-beach"></i> Vacaciones</span>
+              <span class="topic-badge"><i class="fas fa-heart"></i> Beneficios</span>
+              <span class="topic-badge"><i class="fas fa-tools"></i> Incidencias</span>
+              <span class="topic-badge"><i class="fas fa-clock"></i> Horarios</span>
+            </div>
+            <div class="highlight-benefit" style="margin-top:3px;">
+              <i class="fas fa-puzzle-piece"></i> Cada tema es un "modo" diferente que el agente activa según lo que le preguntes
+            </div>
+          </div>
+          <div class="slide-visual">
+            <div class="visual-svg">
+              <svg viewBox="0 0 240 140" fill="none">
+                <rect x="30" y="30" width="80" height="40" rx="8" fill="#F0F7FF" stroke="#0F6CBD" stroke-width="1" opacity="0.4"/>
+                <text x="45" y="48" font-size="7" fill="#005A9E" font-weight="600">⚡ Acciones</text>
+                <text x="45" y="63" font-size="6" fill="#006E8A">Crear tareas · Enviar correos</text>
+                <rect x="125" y="30" width="80" height="40" rx="8" fill="#F0F7FF" stroke="#49D3D0" stroke-width="1" opacity="0.4"/>
+                <text x="140" y="48" font-size="7" fill="#005A9E" font-weight="600">💬 Temas</text>
+                <text x="140" y="63" font-size="6" fill="#006E8A">Vacaciones · Beneficios</text>
+                <text x="60" y="115" font-size="8" fill="#005A9E" font-weight="500">Actuar · Conversar · Resolver</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 5 - IA GENERATIVA vs REGLAS -->
+        <div class="slide" data-index="4">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-code-branch"></i> Comparación</span>
+            <h2 class="slide-title">IA generativa vs Reglas predefinidas</h2>
+            <p class="slide-desc">Dos formas de hacer que tu agente funcione, cada una con sus ventajas.</p>
+            <div class="comparison-grid">
+              <div class="comparison-item" style="border-left:4px solid #49D3D0;">
+                <div class="item-title"><i class="fas fa-brain"></i> IA Generativa</div>
+                <div class="item-desc">Entiende contexto, genera respuestas únicas, se adapta y aprende.</div>
+                <div class="item-badge">🤖 Agente inteligente</div>
+              </div>
+              <div class="comparison-item" style="border-left:4px solid #0F6CBD;">
+                <div class="item-title"><i class="fas fa-list"></i> Reglas predefinidas</div>
+                <div class="item-desc">Respuestas fijas, confiable, predecible y fácil de controlar.</div>
+                <div class="item-badge">📋 Agente estructurado</div>
+              </div>
+            </div>
+            <div class="slide-example" style="border-left-color:#0F6CBD;margin-top:3px;">
+              <i class="fas fa-lightbulb"></i> <strong>Ejemplo:</strong> "¿Cuántos días de vacaciones me quedan?" → IA generativa busca tu información personalizada.
+            </div>
+            <div class="slide-example" style="border-left-color:#006E8A;margin-top:2px;">
+              <i class="fas fa-clock"></i> <strong>Ejemplo:</strong> "¿Cuál es el horario de atención?" → Reglas predefinidas responden "De 9:00 a 18:00".
+            </div>
+            <div class="highlight-benefit" style="margin-top:3px;">
+              <i class="fas fa-star"></i> Lo mejor: ¡puedes combinar ambas!
+            </div>
+          </div>
+          <div class="slide-visual">
+            <div class="visual-svg">
+              <svg viewBox="0 0 240 140" fill="none">
+                <circle cx="70" cy="55" r="30" fill="#49D3D0" opacity="0.06"/>
+                <circle cx="170" cy="55" r="30" fill="#0F6CBD" opacity="0.06"/>
+                <text x="45" y="50" font-size="8" fill="#005A9E" font-weight="600">🧠 IA Generativa</text>
+                <text x="45" y="65" font-size="6" fill="#006E8A">Adaptativa · Personalizada</text>
+                <text x="140" y="50" font-size="8" fill="#005A9E" font-weight="600">📋 Reglas</text>
+                <text x="140" y="65" font-size="6" fill="#006E8A">Fija · Predecible</text>
+                <text x="70" y="115" font-size="8" fill="#005A9E" font-weight="500">✨ Combinación = Agente perfecto</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 6 - RESUMEN Y EJERCICIO -->
+        <div class="slide" data-index="5">
+          <div class="slide-content">
+            <span class="slide-number"><i class="fas fa-flag-checkered"></i> Resumen</span>
+            <h2 class="slide-title">¿Listo para construir tu agente?</h2>
+            <p class="slide-desc">Recuerda los cuatro componentes y cómo combinarlos:</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:4px 0;">
+              <div style="background:rgba(73,211,208,0.06);padding:4px 8px;border-radius:8px;font-size:0.65rem;color:#1e2e3f;">
+                <i class="fas fa-user-tie" style="color:#0F6CBD;"></i> Instrucciones
+              </div>
+              <div style="background:rgba(15,108,189,0.04);padding:4px 8px;border-radius:8px;font-size:0.65rem;color:#1e2e3f;">
+                <i class="fas fa-brain" style="color:#0F6CBD;"></i> Conocimiento
+              </div>
+              <div style="background:rgba(73,211,208,0.06);padding:4px 8px;border-radius:8px;font-size:0.65rem;color:#1e2e3f;">
+                <i class="fas fa-bolt" style="color:#0F6CBD;"></i> Acciones
+              </div>
+              <div style="background:rgba(15,108,189,0.04);padding:4px 8px;border-radius:8px;font-size:0.65rem;color:#1e2e3f;">
+                <i class="fas fa-comments" style="color:#0F6CBD;"></i> Temas
+              </div>
+            </div>
+            <div class="component-card" style="border-left-color:#49D3D0;">
+              <div class="comp-title"><i class="fas fa-pencil-alt comp-icon"></i> Ejercicio</div>
+              <div class="comp-desc">Identifica un proceso cotidiano que podría ser atendido por un agente. ¿Qué información necesita? ¿Qué acciones debe realizar?</div>
+            </div>
+            <div class="highlight-benefit" style="margin-top:3px;">
+              <i class="fas fa-rocket"></i> Empieza con un escenario pequeño y escala
+            </div>
+          </div>
+          <div class="slide-visual">
+            <div class="visual-svg">
+              <svg viewBox="0 0 240 140" fill="none">
+                <circle cx="80" cy="60" r="35" fill="#49D3D0" opacity="0.06"/>
+                <circle cx="160" cy="65" r="30" fill="#0F6CBD" opacity="0.04"/>
+                <rect x="60" y="40" width="50" height="40" rx="8" fill="#005A9E" opacity="0.04"/>
+                <rect x="125" y="50" width="45" height="30" rx="6" fill="#006E8A" opacity="0.04"/>
+                <path d="M85 80 L110 95 L135 80" stroke="#49D3D0" stroke-width="2" opacity="0.3"/>
+                <circle cx="85" cy="80" r="4" fill="#49D3D0"/>
+                <circle cx="135" cy="80" r="4" fill="#49D3D0"/>
+                <text x="60" y="120" font-size="8" fill="#005A9E" font-weight="500">🏗️ Construye tu agente</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="carousel-nav">
+      <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn"><i class="fas fa-chevron-left"></i></button>
+        <button class="nav-btn" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
+        <button class="btn-home" id="homeBtn"><i class="fas fa-home"></i></button>
+      </div>
+      <div class="slide-counter"><span id="slideCounter">1 / 6</span></div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const track = document.getElementById('slidesTrack');
+      const slides = document.querySelectorAll('.slide');
+      const dots = document.querySelectorAll('.dot');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const homeBtn = document.getElementById('homeBtn');
+      const startBtn = document.getElementById('startBtn');
+      const counter = document.getElementById('slideCounter');
+      let currentIndex = 0;
+      const total = slides.length;
+
+      function updateSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= total) index = total - 1;
+        currentIndex = index;
+        track.style.transform = `translateX(-${index * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        counter.textContent = `${index + 1} / ${total}`;
+        homeBtn.style.display = (index === 0) ? 'none' : 'flex';
+      }
+
+      function goTo(index) { if (index >= 0 && index < total) updateSlide(index); }
+      function next() { if (currentIndex < total - 1) goTo(currentIndex + 1); }
+      function prev() { if (currentIndex > 0) goTo(currentIndex - 1); }
+      function home() { goTo(0); }
+
+      prevBtn.addEventListener('click', prev);
+      nextBtn.addEventListener('click', next);
+      homeBtn.addEventListener('click', home);
+      startBtn.addEventListener('click', () => goTo(1));
+      dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+      document.addEventListener('keydown', e => { if (e.key === 'ArrowRight') next(); else if (e.key === 'ArrowLeft') prev(); else if (e.key === 'Home') home(); });
+      updateSlide(0);
+    })();
+  </script>
+</body>
+</html>
