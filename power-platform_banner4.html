@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Microsoft Power Platform — Plataforma Empresarial Inteligente</title>
+<meta name="description" content="Pantalla ejecutiva de bienvenida a Microsoft Power Platform.">
+
+<style>
+  /* ============================================================
+     0. RESET + TOKENS
+  ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root{
+    /* paleta oficial solicitada */
+    --green-01:#107C10;
+    --green-02:#16A34A;
+    --green-03:#22C55E;
+    --green-04:#4ADE80;
+    --green-05:#86EFAC;
+    --green-06:#DCFCE7;
+    --white:#FFFFFF;
+    --bg-dark:#08140A;
+    --bg-card:rgba(16,124,16,0.12);
+
+    /* derivados — calibrados para modo claro */
+    --border-glass: 1px solid rgba(16,124,16,0.14);
+    --border-glass-strong: 1px solid rgba(16,124,16,0.3);
+    --shadow-green: 0 10px 28px rgba(16,124,16,0.14);
+    --glow-green: 0 0 0 4px rgba(74,222,128,0.18);
+    --text-muted: rgba(8,20,10,0.66);
+    --text-faint: rgba(8,20,10,0.46);
+
+    --font-ui: "Segoe UI Variable Display","Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  html, body{
+    height: 100%;
+    background: var(--white);
+    color: var(--bg-dark);
+    font-family: var(--font-ui);
+    overflow: hidden;
+  }
+
+  body{
+    position: relative;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 900px 650px at 8% 10%, rgba(134,239,172,0.32), transparent 60%),
+      radial-gradient(ellipse 1000px 760px at 95% 90%, rgba(220,252,231,0.65), transparent 62%),
+      radial-gradient(ellipse 800px 600px at 50% 50%, rgba(74,222,128,0.07), transparent 70%),
+      var(--white);
+  }
+
+  /* rejilla técnica, muy sutil */
+  body::before{
+    content:"";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(16,124,16,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(16,124,16,0.045) 1px, transparent 1px);
+    background-size: 46px 46px;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  #network{
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    display: block;
+  }
+
+  ::selection{ background: var(--green-03); color: var(--bg-dark); }
+
+  a, button{ font-family: inherit; }
+
+  :focus-visible{
+    outline: 2px solid var(--green-04);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* ============================================================
+     1. LAYOUT — 20 / 45 / 35
+  ============================================================ */
+  .stage{
+    position: relative;
+    z-index: 2;
+    height: 100vh;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 16% 38% 46%;
+    align-items: stretch;
+    gap: clamp(0.8rem, 1.6vw, 1.8rem);
+    padding: clamp(1.1rem, 2.4vh, 2.2rem) clamp(2.2rem, 4.5vw, 4rem) clamp(1.1rem, 2.4vh, 2.2rem) clamp(1.4rem, 3vw, 3rem);
+  }
+
+  .col{ min-width: 0; min-height: 0; }
+
+  /* ============================================================
+     2. COLUMNA IZQUIERDA — LOGO + MARCA
+  ============================================================ */
+  .col-brand{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(0.9rem, 2vh, 1.5rem);
+    border-right: var(--border-glass);
+    padding-right: clamp(0.6rem, 1.2vw, 1.2rem);
+  }
+
+  .logo-wrap{
+    position: relative;
+    width: clamp(76px, 7.2vw, 128px);
+    aspect-ratio: 1 / 1;
+    animation: float 6s ease-in-out infinite;
+  }
+  .logo-wrap::after{
+    content:"";
+    position: absolute;
+    inset: -28%;
+    background: radial-gradient(circle, rgba(34,197,94,0.30), transparent 68%);
+    filter: blur(18px);
+    z-index: -1;
+    animation: pulseGlow 4.2s ease-in-out infinite;
+  }
+  .ppf-logo{ width: 100%; height: 100%; display: block; overflow: visible; }
+  .petal{ mix-blend-mode: multiply; }
+  .ppf-orbit{ transform-origin: 100px 100px; animation: spin 20s linear infinite; }
+
+  .brand-text{ display: flex; flex-direction: column; gap: 0.35rem; }
+  .brand-name{
+    font-size: clamp(1.2rem, 1.7vw, 1.7rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    background: linear-gradient(135deg, var(--green-01) 0%, var(--green-03) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .brand-tag{
+    font-size: clamp(0.66rem, 0.78vw, 0.78rem);
+    color: var(--text-muted);
+    line-height: 1.4;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  /* ============================================================
+     3. COLUMNA CENTRAL — CONTENIDO PRINCIPAL
+  ============================================================ */
+  .col-main{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(0.85rem, 1.7vh, 1.3rem);
+    padding-right: clamp(0.3rem, 0.6vw, 0.7rem);
+  }
+
+  .badge{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: fit-content;
+    padding: 0.42rem 0.9rem 0.42rem 0.7rem;
+    border-radius: 999px;
+    background: var(--bg-card);
+    border: var(--border-glass-strong);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    font-size: clamp(0.62rem, 0.72vw, 0.74rem);
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--green-01);
+    box-shadow: 0 4px 16px rgba(16,124,16,0.14);
+    opacity: 0;
+    animation: fadeSlideUp 0.7s ease-out 0.05s forwards;
+  }
+  .badge-dot{
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green-04);
+    box-shadow: 0 0 0 0 rgba(74,222,128,0.65);
+    animation: dotPulse 2.2s ease-out infinite;
+    flex-shrink: 0;
+  }
+
+  .title{
+    font-size: clamp(1.7rem, 2.55vw, 2.7rem);
+    font-weight: 700;
+    line-height: 1.14;
+    letter-spacing: -0.015em;
+    color: var(--bg-dark);
+    opacity: 0;
+    animation: fadeSlideUp 0.7s ease-out 0.18s forwards;
+  }
+  .title em{
+    font-style: normal;
+    background: linear-gradient(120deg, var(--green-01), var(--green-02) 55%, var(--green-03));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .desc{
+    max-width: 46ch;
+    font-size: clamp(0.86rem, 0.98vw, 1.02rem);
+    line-height: 1.62;
+    color: var(--text-muted);
+    font-weight: 400;
+    opacity: 0;
+    animation: fadeSlideUp 0.7s ease-out 0.3s forwards;
+  }
+
+  .quote{
+    position: relative;
+    max-width: 44ch;
+    padding: 0.75rem 1.1rem 0.75rem 1.3rem;
+    border-left: 3px solid var(--green-04);
+    background: var(--bg-card);
+    border-radius: 0 12px 12px 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-size: clamp(0.84rem, 0.95vw, 0.98rem);
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--green-01);
+    opacity: 0;
+    animation: fadeSlideUp 0.7s ease-out 0.42s forwards;
+  }
+
+  /* ============================================================
+     4. COLUMNA DERECHA — BENEFICIOS
+  ============================================================ */
+  .col-benefits{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(0.6rem, 1.3vh, 1rem);
+    border-left: var(--border-glass);
+    padding-left: clamp(0.6rem, 1.2vw, 1.2rem);
+  }
+
+  .benefits-head{
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    opacity: 0;
+    animation: fadeSlideUp 0.6s ease-out 0.2s forwards;
+  }
+  .benefits-eyebrow{
+    font-size: clamp(0.62rem, 0.7vw, 0.72rem);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green-02);
+    white-space: nowrap;
+  }
+  .benefits-head::after{
+    content:"";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(16,124,16,0.25), transparent);
+  }
+
+  .benefits-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: clamp(0.55rem, 1.2vw, 0.9rem);
+  }
+
+  .b-card{
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: clamp(0.65rem, 1.1vw, 0.95rem) clamp(0.6rem, 1vw, 0.85rem);
+    border-radius: 14px;
+    background: var(--bg-card);
+    border: var(--border-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: transform 0.3s cubic-bezier(.2,.8,.2,1), border-color 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0;
+    animation: fadeSlideUp 0.55s ease-out forwards;
+  }
+  .b-card::before{
+    content:"";
+    position: absolute; inset: 0;
+    background: radial-gradient(160px circle at var(--mx,50%) var(--my,50%), rgba(134,239,172,0.18), transparent 65%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+  .b-card:hover{
+    transform: translateY(-4px);
+    border-color: rgba(16,124,16,0.38);
+    box-shadow: 0 14px 26px rgba(16,124,16,0.16), var(--glow-green);
+  }
+  .b-card:hover::before{ opacity: 1; }
+
+  .b-card:nth-child(1){ animation-delay: 0.28s; }
+  .b-card:nth-child(2){ animation-delay: 0.36s; }
+  .b-card:nth-child(3){ animation-delay: 0.44s; }
+  .b-card:nth-child(4){ animation-delay: 0.52s; }
+  .b-card:nth-child(5){ animation-delay: 0.60s; }
+  .b-card:nth-child(6){ animation-delay: 0.68s; }
+
+  .b-icon{
+    width: clamp(20px, 2vw, 26px);
+    height: clamp(20px, 2vw, 26px);
+    color: var(--green-02);
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+  .b-card:hover .b-icon{ color: var(--green-01); transform: scale(1.1); }
+
+  .b-title{
+    font-size: clamp(0.72rem, 0.82vw, 0.84rem);
+    font-weight: 700;
+    color: var(--bg-dark);
+    line-height: 1.2;
+  }
+  .b-desc{
+    font-size: clamp(0.62rem, 0.7vw, 0.7rem);
+    line-height: 1.34;
+    color: var(--text-faint);
+    font-weight: 400;
+  }
+
+  /* ============================================================
+     5. KEYFRAMES
+  ============================================================ */
+  @keyframes fadeSlideUp{
+    from{ opacity: 0; transform: translateY(16px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float{
+    0%,100%{ transform: translateY(0) rotate(0deg); }
+    50%{ transform: translateY(-9px) rotate(2deg); }
+  }
+  @keyframes pulseGlow{
+    0%,100%{ opacity: 0.5; transform: scale(1); }
+    50%{ opacity: 1; transform: scale(1.08); }
+  }
+  @keyframes spin{
+    to{ transform: rotate(360deg); }
+  }
+  @keyframes dotPulse{
+    0%{ box-shadow: 0 0 0 0 rgba(74,222,128,0.65); }
+    70%{ box-shadow: 0 0 0 7px rgba(74,222,128,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+  }
+
+  /* ============================================================
+     6. RESPONSIVE — la orientación se mantiene SIEMPRE horizontal
+  ============================================================ */
+
+  /* Laptop */
+  @media (max-width: 1300px){
+    .stage{ grid-template-columns: 17% 38% 45%; }
+  }
+
+  /* Tablet / laptop pequeño — se reduce, nunca se apila */
+  @media (max-width: 1024px){
+    .stage{
+      grid-template-columns: 19% 36% 45%;
+      gap: clamp(0.8rem, 1.6vw, 1.4rem);
+      padding: clamp(0.9rem, 2vh, 1.6rem) clamp(1.6rem, 3.2vw, 2.6rem) clamp(0.9rem, 2vh, 1.6rem) clamp(1rem, 2.4vw, 1.8rem);
+    }
+  }
+
+  /* Teléfonos en horizontal — máxima compactación, sigue en 3 columnas */
+  @media (max-width: 820px){
+    .stage{ grid-template-columns: 21% 34% 45%; }
+    .brand-tag{ font-size: 0.62rem; }
+  }
+
+  /* Viewports muy bajos (móvil apaisado) — compactar verticalmente */
+  @media (max-height: 480px){
+    html, body{ overflow-y: auto; }
+    .stage{ height: auto; min-height: 100vh; padding: 0.6rem 2.2rem 0.6rem 1.6rem; gap: 0.9rem; }
+    .logo-wrap{ width: 46px; }
+    .col-brand{ gap: 0.5rem; }
+    .col-main{ gap: 0.45rem; }
+    .desc{ -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+    .quote{ padding: 0.5rem 0.85rem; }
+    .benefits-grid{ gap: 0.35rem; }
+    .b-card{ padding: 0.4rem 0.55rem; gap: 0.2rem; }
+    .b-desc{ display: none; }
+  }
+
+  /* Orientación vertical — se solicita girar el dispositivo */
+  .rotate-overlay{ display: none; }
+  @media (orientation: portrait) and (max-width: 900px){
+    .stage{ display: none; }
+    .rotate-overlay{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      text-align: center;
+      padding: 2.5rem;
+      background: var(--white);
+    }
+    .rotate-overlay svg{
+      width: 52px; height: 52px;
+      color: var(--green-02);
+      animation: rotateHint 1.8s ease-in-out infinite;
+    }
+    .rotate-overlay strong{ font-size: 1.05rem; color: var(--bg-dark); }
+    .rotate-overlay p{ font-size: 0.88rem; color: var(--text-muted); max-width: 30ch; line-height: 1.5; }
+  }
+  @keyframes rotateHint{
+    0%,100%{ transform: rotate(0deg); }
+    50%{ transform: rotate(90deg); }
+  }
+
+  /* Accesibilidad: reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    .badge, .title, .desc, .quote, .benefits-head, .b-card{ opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+  <canvas id="network" aria-hidden="true"></canvas>
+
+  <div class="rotate-overlay" role="status">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="5" y="2" width="14" height="20" rx="2"/>
+      <line x1="12" y1="18" x2="12.01" y2="18"/>
+    </svg>
+    <strong>Gira tu dispositivo</strong>
+    <p>Esta experiencia está diseñada para pantallas horizontales. Rota tu dispositivo para continuar.</p>
+  </div>
+
+
+  <div class="stage">
+
+    <!-- ============ COLUMNA IZQUIERDA: LOGO + MARCA ============ -->
+    <aside class="col col-brand">
+      <div class="logo-wrap">
+        <svg class="ppf-logo" viewBox="0 0 200 200" role="img" aria-label="Logotipo Power Platform">
+          <defs>
+            <linearGradient id="gP1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#107C10"/>
+              <stop offset="100%" stop-color="#22C55E"/>
+            </linearGradient>
+            <linearGradient id="gP2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#16A34A"/>
+              <stop offset="100%" stop-color="#4ADE80"/>
+            </linearGradient>
+            <linearGradient id="gP3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#22C55E"/>
+              <stop offset="100%" stop-color="#86EFAC"/>
+            </linearGradient>
+            <linearGradient id="gP4" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#4ADE80"/>
+              <stop offset="100%" stop-color="#107C10"/>
+            </linearGradient>
+            <filter id="glowFilter" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="5" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          <circle class="ppf-orbit" cx="100" cy="100" r="92" fill="none"
+                  stroke="rgba(16,124,16,0.28)" stroke-width="1.2" stroke-dasharray="3 9"/>
+
+          <g filter="url(#glowFilter)">
+            <path class="petal" fill="url(#gP1)"
+                  d="M100,100 C100,55 130,25 165,30 C180,55 165,95 100,100 Z"/>
+            <path class="petal" fill="url(#gP2)"
+                  d="M100,100 C100,55 130,25 165,30 C180,55 165,95 100,100 Z"
+                  transform="rotate(90 100 100)"/>
+            <path class="petal" fill="url(#gP3)"
+                  d="M100,100 C100,55 130,25 165,30 C180,55 165,95 100,100 Z"
+                  transform="rotate(180 100 100)"/>
+            <path class="petal" fill="url(#gP4)"
+                  d="M100,100 C100,55 130,25 165,30 C180,55 165,95 100,100 Z"
+                  transform="rotate(270 100 100)"/>
+          </g>
+          <circle cx="100" cy="100" r="9" fill="#FFFFFF" stroke="#107C10" stroke-width="1.4" opacity="0.95"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h2 class="brand-name">Power<br>Platform</h2>
+        <p class="brand-tag">Microsoft Business<br>Applications</p>
+      </div>
+    </aside>
+
+    <!-- ============ COLUMNA CENTRAL: CONTENIDO PRINCIPAL ============ -->
+    <main class="col col-main">
+      <span class="badge"><span class="badge-dot"></span>Microsoft Power Platform</span>
+
+      <h1 class="title">Construye, automatiza y decide<br>con <em>inteligencia artificial</em></h1>
+
+      <p class="desc">
+        Power Platform integra desarrollo de aplicaciones, automatización de procesos
+        y análisis de datos en un solo ecosistema impulsado por Copilot. Una plataforma
+        diseñada para que cada equipo de tu organización transforme ideas en soluciones
+        reales, sin fricciones ni barreras técnicas.
+      </p>
+
+      <blockquote class="quote">
+        "La verdadera transformación digital ocurre cuando cada persona de la
+        organización tiene el poder de crear."
+      </blockquote>
+    </main>
+
+    <!-- ============ COLUMNA DERECHA: BENEFICIOS ============ -->
+    <section class="col col-benefits" aria-label="Capacidades clave de Power Platform">
+      <div class="benefits-head">
+        <span class="benefits-eyebrow">Capacidades clave</span>
+      </div>
+
+      <div class="benefits-grid">
+
+        <article class="b-card">
+          <svg class="b-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="8" height="8" rx="1.6"/>
+            <rect x="13" y="3" width="8" height="8" rx="1.6"/>
+            <rect x="3" y="13" width="8" height="8" rx="1.6"/>
+            <rect x="13" y="13" width="8" height="8" rx="1.6"/>
+          </svg>
+          <h3 class="b-title">Power Apps</h3>
+          <p class="b-desc">Aplicaciones low-code para cualquier necesidad.</p>
+        </article>
+
+        <article class="b-card">
+          <svg class="b-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-3-6.7"/>
+            <polyline points="21 3 21 9 15 9"/>
+          </svg>
+          <h3 class="b-title">Power Automate</h3>
+          <p class="b-desc">Automatización inteligente de flujos.</p>
+        </article>
+
+        <article class="b-card">
+          <svg class="b-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="21" x2="5" y2="11"/>
+            <line x1="12" y1="21" x2="12" y2="6"/>
+            <line x1="19" y1="21" x2="19" y2="14"/>
+          </svg>
+          <h3 class="b-title">Power BI</h3>
+          <p class="b-desc">Decisiones basadas en datos en tiempo real.</p>
+        </article>
+
+        <article class="b-card">
+          <svg class="b-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z"/>
+          </svg>
+          <h3 class="b-title">Copilot Studio</h3>
+          <p class="b-desc">Agentes de IA personalizados.</p>
+        </article>
+
+        <article class="b-card">
+          <svg class="b-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3 L20 6 V11 C20 16 16.5 19.5 12 21 C7.5 19.5 4 16 4 11 V6 Z"/>
+            <polyline points="9 12 11 14 15 9.5"/>
+          </svg>
+          <h3 class="b-title">Seguridad</h3>
+          <p class="b-desc">Cumplimiento y gobernanza total.</p>
+        </article>
+
+        <article class="b-card">
+          <svg class="b-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7 7l3-3a5 5 0 0 0-7-7"/>
+            <path d="M14 11a5 5 0 0 0-7-7l-3 3a5 5 0 0 0 7 7"/>
+          </svg>
+          <h3 class="b-title">Integración</h3>
+          <p class="b-desc">Conecta con Microsoft 365 y Azure.</p>
+        </article>
+
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+  (function(){
+    "use strict";
+
+    /* ============================================================
+       CANVAS — Red de partículas / conexiones (AI Network)
+    ============================================================ */
+    var canvas = document.getElementById('network');
+    var ctx = canvas.getContext('2d');
+    var W, H, particles = [];
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var palette = ['#107C10', '#16A34A', '#22C55E', '#16A34A', '#4ADE80'];
+    var mouse = { x: -9999, y: -9999 };
+    var MAX_DIST = 130;
+    var MAX_DIST2 = MAX_DIST * MAX_DIST;
+
+    function resize(){
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+
+    function initParticles(){
+      var density = (W * H) / 16000;
+      var count = Math.max(36, Math.min(120, Math.floor(density)));
+      particles = [];
+      for (var i = 0; i < count; i++){
+        particles.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.26,
+          vy: (Math.random() - 0.5) * 0.26,
+          r: Math.random() * 1.6 + 0.7,
+          c: palette[(Math.random() * palette.length) | 0]
+        });
+      }
+    }
+
+    function onResize(){
+      resize();
+      initParticles();
+    }
+
+    window.addEventListener('resize', onResize);
+    window.addEventListener('mousemove', function(e){
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener('mouseleave', function(){
+      mouse.x = -9999;
+      mouse.y = -9999;
+    });
+
+    resize();
+    initParticles();
+
+    function step(){
+      ctx.clearRect(0, 0, W, H);
+
+      if (!reduceMotion){
+        for (var i = 0; i < particles.length; i++){
+          var p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+
+          var dx = p.x - mouse.x, dy = p.y - mouse.y;
+          var d2 = dx * dx + dy * dy;
+          if (d2 < 16000){
+            var f = (16000 - d2) / 16000 * 0.018;
+            p.x += dx * f;
+            p.y += dy * f;
+          }
+
+          if (p.x < 0 || p.x > W) p.vx *= -1;
+          if (p.y < 0 || p.y > H) p.vy *= -1;
+          p.x = Math.max(0, Math.min(W, p.x));
+          p.y = Math.max(0, Math.min(H, p.y));
+        }
+      }
+
+      for (var a = 0; a < particles.length; a++){
+        for (var b = a + 1; b < particles.length; b++){
+          var pa = particles[a], pb = particles[b];
+          var ddx = pa.x - pb.x, ddy = pa.y - pb.y;
+          var dist2 = ddx * ddx + ddy * ddy;
+          if (dist2 < MAX_DIST2){
+            var dist = Math.sqrt(dist2);
+            var op = (1 - dist / MAX_DIST) * 0.16;
+            ctx.strokeStyle = 'rgba(16,124,16,' + op + ')';
+            ctx.lineWidth = 0.6;
+            ctx.beginPath();
+            ctx.moveTo(pa.x, pa.y);
+            ctx.lineTo(pb.x, pb.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      for (var k = 0; k < particles.length; k++){
+        var pp = particles[k];
+        ctx.beginPath();
+        ctx.fillStyle = pp.c;
+        ctx.globalAlpha = 0.55;
+        ctx.arc(pp.x, pp.y, pp.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      if (!reduceMotion){
+        requestAnimationFrame(step);
+      }
+    }
+    step();
+
+    /* ============================================================
+       FLUENT REVEAL — resaltado que sigue el cursor en las tarjetas
+    ============================================================ */
+    function bindReveal(el){
+      el.addEventListener('mousemove', function(e){
+        var rect = el.getBoundingClientRect();
+        var mx = ((e.clientX - rect.left) / rect.width) * 100;
+        var my = ((e.clientY - rect.top) / rect.height) * 100;
+        el.style.setProperty('--mx', mx + '%');
+        el.style.setProperty('--my', my + '%');
+      });
+    }
+    var revealTargets = document.querySelectorAll('.b-card');
+    for (var r = 0; r < revealTargets.length; r++){
+      bindReveal(revealTargets[r]);
+    }
+
+  })();
+  </script>
+
+</body>
+</html>
