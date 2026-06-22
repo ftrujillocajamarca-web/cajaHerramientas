@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Base de Conocimiento - Copilot Studio</title>
+    <style>
+        :root {
+            --primary-color: #106ebe;
+            --primary-hover: #005a9e;
+            --bg-color: #f3f2f1;
+            --card-bg: #ffffff;
+            --text-color: #323130;
+            --border-color: #edebe9;
+            --accent-bg: #f8f9fa;
+            --text-muted: #605e5c;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .header-container {
+            text-align: center;
+            max-width: 1100px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        /* Buscador interactivo */
+        .search-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 15px;
+            border: 1px solid #a19f9d;
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(16, 110, 190, 0.2);
+        }
+
+        /* Contenedor Principal Horizontal */
+        .workspace-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1100px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .workspace-container.fullscreen {
+            max-width: 100%;
+            height: 95vh;
+        }
+
+        /* Barra de herramientas superior */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #faf9f8;
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .toolbar-info {
+            font-size: 0.9rem;
+            color: #605e5c;
+            font-weight: 600;
+        }
+
+        .btn-utility {
+            background: none;
+            border: 1px solid #d2d0ce;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-utility:hover {
+            background: #f3f2f1;
+        }
+
+        /* Sistema de Navegación por Pestañas Horizontales */
+        .tabs-nav {
+            display: flex;
+            background: #f3f2f1;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border-color);
+            scrollbar-width: none;
+        }
+        .tabs-nav::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            padding: 14px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #605e5c;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            background: #edebe9;
+            color: var(--primary-color);
+        }
+
+        .tab-btn.active {
+            background: var(--card-bg);
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        /* Contenido del Panel */
+        .content-panel {
+            padding: 30px;
+            min-height: 430px;
+        }
+
+        .source-content {
+            display: none;
+            animation: fadeIn 0.35s ease;
+        }
+
+        .source-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estructura en cuadrícula */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-layout { grid-template-columns: 1fr; }
+        }
+
+        .interactive-box {
+            background: var(--accent-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+        }
+
+        .interactive-box h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        /* Listas interactivas (Con casilla de verificación) */
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checklist-item input {
+            margin-top: 4px;
+            accent-color: var(--primary-color);
+        }
+
+        .checklist-item input:checked + span {
+            text-decoration: line-through;
+            color: #a19f9d;
+        }
+
+        /* Listas informativas limpias */
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: var(--text-color);
+            line-height: 1.4;
+        }
+
+        .info-list .icon {
+            flex-shrink: 0;
+        }
+
+        /* Pasos numerados estilo paso a paso */
+        .step-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .step-list li {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .step-number {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        /* Bloques de simulación de datos técnicos */
+        .data-preview {
+            background: #201f1e;
+            color: #f3f2f1;
+            font-family: Consolas, monospace;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin: 10px 0;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .badge-format {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #323130;
+            color: #0078d4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Alertas de recomendación */
+        .tip-banner {
+            background: #fff8f0;
+            border-left: 4px solid #f7630c;
+            padding: 15px;
+            border-radius: 0 4px 4px 0;
+            margin-top: 20px;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <h1>Centro de Configuración de Conocimiento</h1>
+        <p>Aprende a configurar e integrar fuentes de datos estructuradas en tu Agente de Copilot Studio</p>
+        <input type="text" class="search-box" id="searchBox" placeholder="🔍 Buscar módulo o fuente..." onkeyup="filterSources()">
+    </div>
+
+    <div class="workspace-container" id="workspace">
+        <div class="toolbar">
+            <div class="toolbar-info" id="completionInfo">Progreso de revisión: 1/6 secciones vistas</div>
+            <button class="btn-utility" onclick="toggleFullscreen()">
+                🗖 Alternar Pantalla Completa
+            </button>
+        </div>
+
+        <div class="tabs-nav" id="tabsContainer">
+            <button class="tab-btn active" onclick="switchTab(0, 'pdf')">1. Archivos PDF</button>
+            <button class="tab-btn" onclick="switchTab(1, 'word')">2. Documentos Word</button>
+            <button class="tab-btn" onclick="switchTab(2, 'web')">3. Sitios Web</button>
+            <button class="tab-btn" onclick="switchTab(3, 'sharepoint')">4. SharePoint</button>
+            <button class="tab-btn" onclick="switchTab(4, 'dataverse')">5. Dataverse</button>
+            <button class="tab-btn" onclick="switchTab(5, 'config')">⚙️ Paso a Paso: Configurar</button>
+        </div>
+
+        <div class="content-panel">
+            
+            <div id="pdf" class="source-content active">
+                <h2>Fuentes Documentales en PDF</h2>
+                <p>Formatos estáticos ideales para manuales estables y normativas que no sufren modificaciones diarias.</p>
+                
+                <div class="grid-layout">
+                    <div class="interactive-box">
+                        <h3>📋 Ejemplos Disponibles (Simular Carga)</h3>
+                        <label class="checklist-item"><input type="checkbox"> <span>Manual de empleados</span></label>
+                        <label class="checklist-item"><input type="checkbox"> <span>Política de vacaciones</span></label>
+                        <label class="checklist-item"><input type="checkbox"> <span>Reglamento interno</span></label>
+                        <label class="checklist-item"><input type="checkbox"> <span>Procedimientos de RRHH</span></label>
+                        <label class="checklist-item"><input type="checkbox"> <span>Guías corporativas</span></label>
+                    </div>
+                    <div class="interactive-box">
+                        <h3>⚡ Ventajas Clave</h3>
+                        <ul class="info-list">
+                            <li><span class="icon">🔹</span> <span>Fácil implementación sin desarrollos de código.</span></li>
+                            <li><span class="icon">🔹</span> <span>Disponible de forma nativa en la mayoría de organizaciones.</span></li>
+                            <li><span class="icon">🔹</span> <span>No requiere configuraciones adicionales de infraestructura.</span></li>
+                        </ul>
+                        <div class="data-preview">
+                            <span class="badge-format">PDF</span>
+                            Politica_Vacaciones_2025.pdf
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="word" class="source-content">
+                <h2>Procesador de Textos Word</h2>
+                <p>Copilot Studio extrae de forma inteligente la información redactada en formatos estructurados tradicionales.</p>
+                
+                <div class="grid-layout">
+                    <div class="interactive-box">
+                        <h3>📋 Repositorio de Muestra</h3>
+                        <label class="checklist-item"><input type="checkbox"> <span>Procedimientos internos</span></label>
+                        <label class="checklist-item"><input type="checkbox"> <span>Políticas de recursos humanos</span></label>
+                        <label class="checklist-item"><input type="checkbox"> <span>Instructivos operativos</span></label>
+                    </div>
+                    <div class="interactive-box">
+                        <h3>🛠️ Formatos Comunes</h3>
+                        <div class="data-preview">
+                            <span class="badge-format">DOCX</span>
+                            procedimiento_seguridad_v2.docx
+                        </div>
+                    </div>
+                </div>
+                <div class="tip-banner">
+                    <strong>💡 Recomendación:</strong> Mantener títulos y encabezados claramente estructurados para mejorar la comprensión de la IA.
+                </div>
+            </div>
+
+            <div id="web" class="source-content">
+                <h2>Indexación de Portales y Sitios Web</h2>
+                <p>El agente puede consultar de manera fluida la información disponible en dichas páginas para responder preguntas puntuales.</p>
+                
+                <div class="grid-layout">
+                    <div class="interactive-box">
+                        <h3>🌐 URLs de Rastreo</h3>
+                        <div class="data-preview">
+                            <span class="badge-format">URL</span>
+                            https://intranet.empresa.com
+                        </div>
+                        <div class="data-preview">
+                            <span class="badge-format">URL</span>
+                            https://rrhh.empresa.com/politicas
+                        </div>
+                    </div>
+                    <div class="interactive-box">
+                        <h3>🎯 Ideal para:</h3>
+                        <ul class="info-list">
+                            <li><span class="icon">✔</span> <span>Políticas internas que cambian frecuentemente.</span></li>
+                            <li><span class="icon">✔</span> <span>Portales y entornos colaborativos internos.</span></li>
+                            <li><span class="icon">✔</span> <span>Bases de conocimiento corporativas centralizadas.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sharepoint" class="source-content">
+                <h2>Ecosistema Microsoft SharePoint</h2>
+                <p>Una de las opciones de almacenamiento e integración más utilizadas y robustas dentro de Microsoft 365.</p>
+                
+                <div class="grid-layout">
+                    <div class="interactive-box">
+                        <h3>📂 Elementos Soportados</h3>
+                        <ul class="info-list">
+                            <li><span class="icon">📁</span> <span>Bibliotecas de documentos.</span></li>
+                            <li><span class="icon">📁</span> <span>Sitios completos y subsitios.</span></li>
+                            <li><span class="icon">📁</span> <span>Páginas de comunicación corporativas.</span></li>
+                            <li><span class="icon">📁</span> <span>Carpetas específicas aisladas.</span></li>
+                        </ul>
+                        <div class="data-preview" style="line-height: 1.4; margin-top: 15px;">
+Sitio RRHH
+├─ Vacaciones
+├─ Beneficios
+└─ Reglamentos
+                        </div>
+                    </div>
+                    <div class="interactive-box">
+                        <h3>⚡ Ventajas de Red</h3>
+                        <ul class="info-list">
+                            <li><span class="icon">💎</span> <span>Integración nativa directa con Microsoft 365.</span></li>
+                            <li><span class="icon">💎</span> <span>Esquema de actualización centralizado.</span></li>
+                            <li><span class="icon">💎</span> <span>Estricto control de permisos y accesos de usuario.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dataverse" class="source-content">
+                <h2>Bases de Datos Relacionales Dataverse</h2>
+                <p>Dataverse permite consultar flujos de información estructurada de manera inmediata.</p>
+                
+                <div class="grid-layout">
+                    <div class="interactive-box">
+                        <h3>📊 Esquema de Tabla de Ejemplo</h3>
+                        <div class="data-preview">
+                            <span class="badge-format">TABLE</span>
+                            FAQ_RRHH
+                        </div>
+                    </div>
+                    <div class="interactive-box">
+                        <h3>🎯 Ideal para:</h3>
+                        <ul class="info-list">
+                            <li><span class="icon">🔹</span> <span>Catálogos de productos y servicios.</span></li>
+                            <li><span class="icon">🔹</span> <span>Estructuras estandarizadas de preguntas frecuentes.</span></li>
+                            <li><span class="icon">🔹</span> <span>Modelos de datos empresariales bien estructurados.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="config" class="source-content">
+                <h2>¿Cómo configurar la Base de Conocimiento?</h2>
+                <p>Sigue este flujo estratégico dentro de Microsoft Copilot Studio para alimentar el cerebro de tu agente artificial de forma correcta.</p>
+                
+                <div class="grid-layout">
+                    <div class="interactive-box">
+                        <h3>🛠️ Proceso de Conexión</h3>
+                        <ul class="step-list">
+                            <li><span class="step-number">1</span> <strong>Acceso:</strong> Entra a tu copiloto y en el menú de navegación izquierdo selecciona la sección <strong>Conocimiento (Knowledge)</strong>.</li>
+                            <li><span class="step-number">2</span> <strong>Agregar Origen:</strong> Haz clic en el botón superior <span style="color:var(--primary-color); font-weight:bold;">"+ Agregar conocimiento"</span>.</li>
+                            <li><span class="step-number">3</span> <strong>Selección:</strong> Elige la categoría que desees del listado (Archivos, Sitios Web, SharePoint o Dataverse).</li>
+                            <li><span class="step-number">4</span> <strong>Vinculación:</strong> Sube tus archivos o pega las URLs correspondientes según el tipo seleccionado.</li>
+                        </ul>
+                    </div>
+                    <div class="interactive-box">
+                        <h3>🔑 Buenas Prácticas Interactivas</h3>
+                        <ul class="info-list">
+                            <li><span class="icon">💡</span> <span><strong>Segmentación:</strong> Sube archivos individuales de menos de 100MB para respuestas más rápidas.</span></li>
+                            <li><span class="icon">💡</span> <span><strong>Sincronización:</strong> Los cambios en SharePoint y Sitios Web se actualizan automáticamente de forma periódica.</span></li>
+                            <li><span class="icon">💡</span> <span><strong>Idioma:</strong> Asegúrate de que las fuentes estén en el mismo idioma en el que configuraste el Agente.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Set inicializado con la pestaña 0 (PDF) ya vista al cargar
+        const visitedTabs = new Set([0]); 
+        const totalTabs = 6;
+
+        function updateCompletionTracker() {
+            document.getElementById('completionInfo').innerText = `Progreso de revisión: ${visitedTabs.size}/${totalTabs} secciones vistas`;
+        }
+
+        function switchTab(index, contentId) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+
+            const panels = document.querySelectorAll('.source-content');
+            panels.forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(contentId).classList.add('active');
+
+            visitedTabs.add(index);
+            updateCompletionTracker();
+        }
+
+        function filterSources() {
+            const input = document.getElementById('searchBox').value.toLowerCase();
+            const tabs = document.querySelectorAll('.tab-btn');
+            
+            tabs.forEach(tab => {
+                const text = tab.innerText.toLowerCase();
+                if(text.includes(input)) {
+                    tab.style.display = "block";
+                } else {
+                    tab.style.display = "none";
+                }
+            });
+        }
+
+        function toggleFullscreen() {
+            const workspace = document.getElementById('workspace');
+            workspace.classList.toggle('fullscreen');
+        }
+    </script>
+</body>
+</html>
