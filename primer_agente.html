@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Copilot Studio - Studio Workspace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --m365-purple: #7427D6;
+            --m365-purple-hover: #601FB3;
+            --fluent-bg: #F3F2F1;
+            --fluent-text: #201F1E;
+            --fluent-secondary: #605E5C;
+            --fluent-border: #EDEBE9;
+            --primary-accent: #0F6CBD;
+            --success-green: #107C41;
+            --node-trigger-bg: #F4F1FA;
+            --node-trigger-border: #8A61D2;
+            --radius-fluent: 4px;
+            --shadow-fluent: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #FAFAFA;
+            color: var(--fluent-text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- TOP BAR (MICROSOFT SUITE HEADER) --- */
+        .m365-top-bar {
+            height: 48px;
+            background-color: #111111;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            font-size: 14px;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-weight: 600;
+        }
+
+        .waffle-icon {
+            font-size: 16px;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        /* --- MAIN WORKSPACE LAYOUT --- */
+        .studio-layout {
+            display: grid;
+            grid-template-columns: 220px 1fr 340px;
+            flex: 1;
+            height: calc(100vh - 48px);
+        }
+
+        /* --- 1. LEFT NAVIGATION PANEL (NAVBAR) --- */
+        .studio-nav {
+            background-color: #F3F2F1;
+            border-right: 1px solid var(--fluent-border);
+            display: flex;
+            flex-direction: column;
+            padding: 8px 0;
+        }
+
+        .agent-profile-summary {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--fluent-border);
+            margin-bottom: 8px;
+        }
+
+        .agent-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--m365-purple);
+            border-radius: var(--radius-fluent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .agent-info h3 {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .agent-info p {
+            font-size: 11px;
+            color: var(--fluent-secondary);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            font-size: 13px;
+            color: var(--fluent-text);
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background-color: #EDEBE9;
+        }
+
+        .nav-item.active {
+            background-color: #FFFFFF;
+            color: var(--m365-purple);
+            font-weight: 600;
+            border-left: 4px solid var(--m365-purple);
+        }
+
+        .nav-item i {
+            width: 16px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--fluent-secondary);
+        }
+
+        .nav-item.active i {
+            color: var(--m365-purple);
+        }
+
+        /* --- 2. CENTER CANVAS (DIAGRAM EDITOR) --- */
+        .canvas-area {
+            background-color: #FAF9F8;
+            background-image: radial-gradient(#E1DFDD 1px, transparent 1px);
+            background-size: 16px 16px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .canvas-header-bar {
+            background: #FFFFFF;
+            height: 52px;
+            border-bottom: 1px solid var(--fluent-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .canvas-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .canvas-actions .fluent-btn {
+            background: var(--primary-accent);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .canvas-container {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        /* NODOS COGNITIVOS REALES */
+        .fluent-node {
+            background: #FFFFFF;
+            border: 1px solid var(--fluent-border);
+            border-radius: var(--radius-fluent);
+            width: 320px;
+            box-shadow: var(--shadow-fluent);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .fluent-node.trigger {
+            border-top: 4px solid var(--node-trigger-border);
+        }
+
+        .fluent-node.message {
+            border-top: 4px solid var(--primary-accent);
+        }
+
+        .fluent-node.question {
+            border-top: 4px solid var(--warning-orange, #D83B01);
+        }
+
+        .node-header {
+            padding: 10px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--fluent-secondary);
+            background: #FAFAFA;
+            border-bottom: 1px solid var(--fluent-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .node-body {
+            padding: 14px;
+            font-size: 13px;
+            color: var(--fluent-text);
+            line-height: 1.4;
+        }
+
+        .node-connection-line {
+            width: 2px;
+            height: 24px;
+            background: #A19F9D;
+            position: relative;
+        }
+
+        .node-connection-line::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: -3px;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid #A19F9D;
+        }
+
+        .add-node-circle {
+            width: 20px;
+            height: 20px;
+            background: #FFFFFF;
+            border: 1px solid #A19F9D;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--primary-accent);
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.15s;
+        }
+
+        .add-node-circle:hover {
+            background: var(--primary-accent);
+            color: white;
+            border-color: var(--primary-accent);
+        }
+
+        /* --- 3. RIGHT TEST PANEL (TEST BOT) --- */
+        .test-panel {
+            background-color: #FFFFFF;
+            border-left: 1px solid var(--fluent-border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .test-panel-header {
+            height: 52px;
+            border-bottom: 1px solid var(--fluent-border);
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .reset-chat-btn {
+            font-size: 12px;
+            color: var(--primary-accent);
+            cursor: pointer;
+            background: none;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .test-chat-body {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: #FAF9F8;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .chat-bubble.bot {
+            background: #FFFFFF;
+            border: 1px solid var(--fluent-border);
+            align-self: flex-start;
+        }
+
+        .chat-bubble.user {
+            background: #E1DFDD;
+            color: var(--fluent-text);
+            align-self: flex-end;
+        }
+
+        .source-tag {
+            display: block;
+            font-size: 11px;
+            color: var(--primary-accent);
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        .test-chat-footer {
+            padding: 16px;
+            border-top: 1px solid var(--fluent-border);
+            background: #FFFFFF;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            border: 1px solid #A19F9D;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: var(--m365-purple);
+        }
+
+        .chat-input-field {
+            flex: 1;
+            border: none;
+            padding: 8px 12px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .chat-send-btn {
+            background: none;
+            border: none;
+            padding: 0 12px;
+            color: var(--m365-purple);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .chat-send-btn:hover {
+            color: var(--m365-purple-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR INSTITUCIONAL -->
+    <header class="m365-top-bar">
+        <div class="top-bar-left">
+            <i class="fa-solid fa-grip waffle-icon"></i>
+            <span>Microsoft Copilot Studio</span>
+        </div>
+        <div>
+            <i class="fa-regular fa-circle-question" style="margin-right:12px; cursor:pointer;"></i>
+            <i class="fa-regular fa-gear" style="cursor:pointer;"></i>
+        </div>
+    </header>
+
+    <!-- DISEÑO DEL ESTUDIO -->
+    <div class="studio-layout">
+        
+        <!-- 1. NAVEGACIÓN IZQUIERDA -->
+        <nav class="studio-nav">
+            <div class="agent-profile-summary">
+                <div class="agent-avatar">VA</div>
+                <div class="agent-info">
+                    <h3>Agente de Vacaciones</h3>
+                    <p><i class="fa-solid fa-circle" style="color:var(--success-green); font-size:7px;"></i> Entorno Dev</p>
+                </div>
+            </div>
+            <a class="nav-item"><i class="fa-solid fa-house"></i> Inicio</a>
+            <a class="nav-item active"><i class="fa-solid fa-diagram-project"></i> Temas (Topics)</a>
+            <a class="nav-item"><i class="fa-solid fa-book"></i> Conocimiento</a>
+            <a class="nav-item"><i class="fa-solid fa-chart-line"></i> Analítica</a>
+            <a class="nav-item"><i class="fa-solid fa-cloud-arrow-up"></i> Publicar</a>
+        </nav>
+
+        <!-- 2. LIENZO CENTRAL (CANVAS DE EDICIÓN) -->
+        <section class="canvas-area">
+            <div class="canvas-header-bar">
+                <div class="canvas-title">
+                    <i class="fa-solid fa-diagram-project" style="color:var(--m365-purple);"></i>
+                    <span>Consulta de Saldos</span>
+                </div>
+                <div class="canvas-actions">
+                    <button class="fluent-btn"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                
+                <!-- NODO TRIGGER -->
+                <div class="fluent-node trigger">
+                    <div class="node-header">
+                        <span><i class="fa-solid fa-bolt" style="color:var(--node-trigger-border)"></i> Desencadenador</span>
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </div>
+                    <div class="node-body">
+                        <strong>Frases clave:</strong>
+                        <p style="color: var(--fluent-secondary); font-size:12px; margin-top:4px;">- Cuántos días de vacaciones tengo<br>- Saldo de días disponibles<br>- Consultar mis vacaciones</p>
+                    </div>
+                </div>
+
+                <div class="node-connection-line"></div>
+                <div class="add-node-circle"><i class="fa-solid fa-plus"></i></div>
+                <div class="node-connection-line"></div>
+
+                <!-- NODO ACCIÓN (LLAMADO A FLUJO O INFORMACIÓN) -->
+                <div class="fluent-node message">
+                    <div class="node-header">
+                        <span><i class="fa-regular fa-comment-dots" style="color:var(--primary-accent)"></i> Enviar un Mensaje</span>
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </div>
+                    <div class="node-body">
+                        <p>Entendido. Consultaré tus días disponibles en la base de datos central de Gestión Humana...</p>
+                    </div>
+                </div>
+
+                <div class="node-connection-line"></div>
+                <div class="add-node-circle"><i class="fa-solid fa-plus"></i></div>
+                <div class="node-connection-line"></div>
+
+                <!-- NODO PREGUNTA MOCK -->
+                <div class="fluent-node question">
+                    <div class="node-header">
+                        <span><i class="fa-regular fa-circle-question" style="color:#D83B01"></i> Formular una Pregunta</span>
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </div>
+                    <div class="node-body">
+                        <p style="margin-bottom:6px;">¿Deseas radicar una nueva solicitud formal ahora mismo?</p>
+                        <span style="font-size:11px; background:#FFF0F0; padding:2px 6px; border:1px solid #F8D7DA; border-radius:2px;">Opciones: Sí / No</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3. PANEL DE PRUEBAS COMPLETAMENTE INTERACTIVO (DERECHA) -->
+        <section class="test-panel">
+            <div class="test-panel-header">
+                <span><i class="fa-solid fa-vial" style="color:var(--success-green); margin-right:6px;"></i> Probar agente</span>
+                <button class="reset-chat-btn" id="clear-chat-btn"><i class="fa-solid fa-rotate-right"></i> Reiniciar</button>
+            </div>
+
+            <!-- CUERPO DEL CHAT -->
+            <div class="test-chat-body" id="chat-box">
+                <div class="chat-bubble bot">
+                    ¡Hola! Soy el Agente de Gestión Humana. Puedo ayudarte a verificar tu saldo de vacaciones, consultar políticas internas corporativas o iniciar una solicitud formal. ¿Qué deseas hacer?
+                </div>
+            </div>
+
+            <!-- ENTRADA DE CHAT DEL USUARIO -->
+            <div class="test-chat-footer">
+                <div class="chat-input-wrapper">
+                    <input type="text" class="chat-input-field" id="chat-input" placeholder="Escribe un mensaje al agente de prueba...">
+                    <button class="chat-send-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- SCRIPT DE INTERACTIVIDAD PARA EL PANEL DE PRUEBAS -->
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const clearBtn = document.getElementById('clear-chat-btn');
+
+        function appendMessage(text, isUser, source = null) {
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${isUser ? 'user' : 'bot'}`;
+            bubble.innerHTML = text;
+
+            if (source) {
+                const srcTag = document.createElement('span');
+                srcTag.className = 'source-tag';
+                srcTag.innerHTML = `<i class="fa-solid fa-file-lines"></i> Fuente: ${source}`;
+                bubble.appendChild(srcTag);
+            }
+
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleSend() {
+            const query = chatInput.value.trim();
+            if (!query) return;
+
+            // 1. Añadir mensaje de usuario
+            appendMessage(query, true);
+            chatInput.value = '';
+
+            // 2. Simular IA de Copilot Studio mapeando intenciones en tiempo real
+            setTimeout(() => {
+                const lowerQuery = query.toLowerCase();
+                
+                if (lowerQuery.includes('vacaciones') || lowerQuery.includes('saldo') || lowerQuery.includes('días')) {
+                    appendMessage("Revisando los registros en Dataverse... Actualmente posees <strong>15 días hábiles</strong> de vacaciones acumuladas y listas para disfrutar.", false, "Base_Saldos_Dataverse");
+                } else if (lowerQuery.includes('politica') || lowerQuery.includes('manual') || lowerQuery.includes('reglamento')) {
+                    appendMessage("Según el artículo 22 del Reglamento Interno de Trabajo, las vacaciones deben solicitarse con un mínimo de 15 días calendario de anticipación.", false, "Reglamento_Interno_v4.pdf");
+                } else {
+                    appendMessage("Entendido tu mensaje. Para procesar esa solicitud de manera precisa, requeriré activar un flujo de automatización con Power Automate. ¿Deseas proceder?", false);
+                }
+            }, 1000);
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
+
+        clearBtn.addEventListener('click', () => {
+            chatBox.innerHTML = `
+                <div class="chat-bubble bot">
+                    Conversación restablecida. ¿En qué te puedo colaborar en este momento dentro del entorno de pruebas?
+                </div>`;
+        });
+    </script>
+</body>
+</html>
