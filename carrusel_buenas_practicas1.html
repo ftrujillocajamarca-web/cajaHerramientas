@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buenas Prácticas - Copilot Studio</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --error: #dc2626;
+            --bg-correct: #f0fdf4;
+            --bg-incorrect: #fef2f2;
+            --border-color: #e2e8f0;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f8fafc; padding: 20px; display: flex; justify-content: center; }
+        .carousel-wrapper { position: relative; width: 100%; max-width: 700px; display: flex; align-items: center; gap: 15px; }
+        
+        .carousel-container { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); flex-grow: 1; padding: 24px; overflow: hidden; }
+        .carousel-header { margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
+        
+        .carousel-viewport { height: 400px; overflow-y: auto; scroll-behavior: smooth; padding-right: 10px; }
+        .card { background: #fff; border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        .card-title { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 15px; display: block; }
+
+        .example-box { border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 4px solid transparent; }
+        .correct-box { background: var(--bg-correct); border-left-color: var(--success); }
+        .incorrect-box { background: var(--bg-incorrect); border-left-color: var(--error); }
+        .label { font-weight: 800; font-size: 0.7rem; display: block; margin-bottom: 4px; text-transform: uppercase; }
+        .example-text { font-size: 0.85rem; color: #334155; line-height: 1.4; white-space: pre-line; }
+
+        /* Estilo de botones laterales */
+        .nav-btn { 
+            background: white; border: 1px solid var(--border-color); border-radius: 50%; 
+            width: 50px; height: 50px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+            transition: transform 0.2s, background 0.2s; z-index: 10;
+        }
+        .nav-btn:hover { background: var(--primary); color: white; transform: scale(1.1); }
+    </style>
+</head>
+<body>
+
+<div class="carousel-wrapper">
+    <button class="nav-btn" onclick="move(-1)">←</button>
+    
+    <div class="carousel-container">
+        <div class="carousel-header">
+            <h2 style="margin:0;">Buenas prácticas para agentes</h2>
+            <div id="slideCounter" style="font-size: 0.8rem; color: #64748b; margin-top: 5px;">1 / 14</div>
+        </div>
+        <div class="carousel-viewport" id="carouselViewport">
+            <div id="carouselTrack"></div>
+        </div>
+    </div>
+
+    <button class="nav-btn" onclick="move(1)">→</button>
+</div>
+
+<script>
+    const data = [
+        { t: "Utilizar documentos oficiales y actualizados", c: "Política de Vacaciones 2025 aprobada por RRHH.", i: "Política de Vacaciones 2022 que ya no se encuentra vigente." },
+        { t: "Mantener una única versión vigente", c: "Politica_Vacaciones_Vigente.pdf", i: "Politica_Vacaciones_v1.pdf\nPolitica_Vacaciones_Final.pdf" },
+        { t: "Utilizar títulos descriptivos", c: "Solicitud de Vacaciones\nAprobación de Vacaciones", i: "Capítulo 1\nInformación General" },
+        { t: "Organizar mediante encabezados", c: "Elegibilidad, Días, Solicitud, Aprobaciones", i: "Bloque de texto sin estructura." },
+        { t: "Utilizar lenguaje claro y sencillo", c: "Todo empleado tiene derecho a 15 días hábiles.", i: "La concesión del periodo estará sujeta a las disposiciones normativas..." },
+        { t: "Crear documentos especializados por tema", c: "Politica_Vacaciones.pdf, Licencias.pdf", i: "Manual_RRHH_Completo_500_Paginas.pdf" },
+        { t: "Incluir preguntas frecuentes (FAQ)", c: "Pregunta: ¿Quién aprueba? Respuesta: Jefe directo.", i: "Información mezclada en varios documentos." },
+        { t: "Eliminar información duplicada", c: "Regla centralizada en un único documento.", i: "Documentos con reglas contradictorias." },
+        { t: "Mantener formatos consistentes", c: "Objetivo, Alcance, Proceso, Responsable.", i: "Cada documento con estructura distinta." },
+        { t: "Evitar contenido ambiguo", c: "El jefe directo debe aprobar la solicitud.", i: "La solicitud debe ser aprobada por la persona correspondiente." },
+        { t: "Identificar fecha de vigencia", c: "Versión vigente desde enero de 2026.", i: "Documento sin fecha de actualización." },
+        { t: "Utilizar tablas para datos", c: "Tabla: Cargo (Empleado/Gerente) vs Días.", i: "Información dispersa en múltiples párrafos." },
+        { t: "Nombres de archivos descriptivos", c: "Politica_Vacaciones_2026.pdf, FAQ.docx", i: "Documento1.pdf, ArchivoNuevo.pdf" },
+        { t: "Definir responsables y revisiones", c: "Responsable: RRHH. Revisiones: Trimestrales.", i: "No existe un responsable ni revisiones." }
+    ];
+
+    const track = document.getElementById('carouselTrack');
+    data.forEach(item => {
+        track.innerHTML += `
+            <div class="card">
+                <span class="card-title">${item.t}</span>
+                <div class="example-box correct-box">
+                    <span class="label">✔ Correcto</span>
+                    <div class="example-text">${item.c}</div>
+                </div>
+                <div class="example-box incorrect-box">
+                    <span class="label">✘ Incorrecto</span>
+                    <div class="example-text">${item.i}</div>
+                </div>
+            </div>`;
+    });
+
+    let current = 0;
+    const cards = document.querySelectorAll('.card');
+    const counter = document.getElementById('slideCounter');
+    function move(step) {
+        current = Math.max(0, Math.min(cards.length - 1, current + step));
+        cards[current].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        counter.textContent = `${current + 1} / ${cards.length}`;
+    }
+</script>
+</body>
+</html>
