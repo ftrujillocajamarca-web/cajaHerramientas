@@ -3,22 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Microsoft Copilot Studio - Studio Workspace</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Simulador: Agente de RRHH - Vacaciones</title>
     <style>
         :root {
-            --m365-purple: #7427D6;
-            --m365-purple-hover: #601FB3;
-            --fluent-bg: #F3F2F1;
-            --fluent-text: #201F1E;
-            --fluent-secondary: #605E5C;
-            --fluent-border: #EDEBE9;
-            --primary-accent: #0F6CBD;
-            --success-green: #107C41;
-            --node-trigger-bg: #F4F1FA;
-            --node-trigger-border: #8A61D2;
-            --radius-fluent: 4px;
-            --shadow-fluent: 0 2px 8px rgba(0,0,0,0.08);
+            --copilot-blue: #005a9e; /* Azul más oscuro para mejor contraste */
+            --copilot-hover-blue: #004b87;
+            --copilot-light-blue: #eff6fc;
+            --bg-light: #f3f2f1;
+            --border-color: #797775; /* Bordes más oscuros */
+            --text-main: #201f1e; /* Texto principal casi negro */
+            --text-secondary: #494847; /* Texto secundario más oscuro para contraste */
+            --sidebar-width: 220px;
+            --topbar-height: 48px;
         }
 
         * {
@@ -26,541 +22,742 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
-            background-color: #FAFAFA;
-            color: var(--fluent-text);
-            height: 100vh;
+            background-color: #faf9f8;
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
+            height: 100vh;
             overflow: hidden;
         }
 
-        /* --- TOP BAR (MICROSOFT SUITE HEADER) --- */
-        .m365-top-bar {
-            height: 48px;
+        header.training-header {
             background-color: #111111;
-            color: #FFFFFF;
+            color: #ffffff;
+            padding: 10px 24px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
-            font-size: 14px;
+            align-items: center;
+            height: 56px;
+            border-bottom: 3px solid var(--copilot-blue);
+            z-index: 100;
         }
 
-        .top-bar-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
+        .training-title h1 {
+            font-size: 16px;
             font-weight: 600;
         }
 
-        .waffle-icon {
-            font-size: 16px;
-            cursor: pointer;
-            opacity: 0.8;
+        .training-title p {
+            font-size: 12px;
+            color: #f3f2f1;
         }
 
-        /* --- MAIN WORKSPACE LAYOUT --- */
-        .studio-layout {
-            display: grid;
-            grid-template-columns: 220px 1fr 340px;
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-width: 300px;
+        }
+
+        .progress-bar-bg {
+            background-color: #3b3a39;
+            height: 8px;
+            border-radius: 4px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background-color: #00b7c3; /* Color brillante para la barra de progreso */
+            height: 100%;
+            width: 10%;
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            font-size: 13px;
+            font-weight: 700;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        main.workspace {
+            display: flex;
             flex: 1;
-            height: calc(100vh - 48px);
+            height: calc(100vh - 56px - 60px);
+            overflow: hidden;
         }
 
-        /* --- 1. LEFT NAVIGATION PANEL (NAVBAR) --- */
-        .studio-nav {
-            background-color: #F3F2F1;
-            border-right: 1px solid var(--fluent-border);
+        section.instruction-panel {
+            width: 400px;
+            background-color: #ffffff;
+            border-right: 2px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            padding: 8px 0;
+            overflow-y: auto;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+            z-index: 50;
         }
 
-        .agent-profile-summary {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid var(--fluent-border);
-            margin-bottom: 8px;
+        .instruction-content {
+            padding: 24px;
         }
 
-        .agent-avatar {
-            width: 32px;
-            height: 32px;
-            background: var(--m365-purple);
-            border-radius: var(--radius-fluent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .agent-info h3 {
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .agent-info p {
+        .step-badge {
+            display: inline-block;
+            background-color: var(--text-main);
+            color: #ffffff;
             font-size: 11px;
-            color: var(--fluent-secondary);
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
         }
 
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 16px;
-            font-size: 13px;
-            color: var(--fluent-text);
-            text-decoration: none;
-            cursor: pointer;
+        .action-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        .section-block {
+            margin-bottom: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .section-block:last-child {
+            border-bottom: none;
+        }
+
+        .block-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .block-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        .ui-location {
+            background-color: #f3f2f1;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+            font-size: 12px;
+            color: #bc101d; /* Rojo oscuro para contraste alto */
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+        }
+
+        .tip-box {
+            background-color: #fff8e5;
+            border-left: 4px solid #b77c00; /* Amarillo oscuro / marrón para contraste */
+            padding: 10px;
+            border-radius: 0 4px 4px 0;
             font-weight: 500;
         }
 
-        .nav-item:hover {
-            background-color: #EDEBE9;
+        .success-box {
+            background-color: #f4fbf5;
+            border-left: 4px solid #107c41;
+            padding: 10px;
+            border-radius: 0 4px 4px 0;
+            font-weight: 500;
         }
 
-        .nav-item.active {
-            background-color: #FFFFFF;
-            color: var(--m365-purple);
-            font-weight: 600;
-            border-left: 4px solid var(--m365-purple);
+        section.interface-simulator {
+            flex: 1;
+            background-color: var(--bg-light);
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
 
-        .nav-item i {
-            width: 16px;
-            text-align: center;
-            font-size: 14px;
-            color: var(--fluent-secondary);
-        }
-
-        .nav-item.active i {
-            color: var(--m365-purple);
-        }
-
-        /* --- 2. CENTER CANVAS (DIAGRAM EDITOR) --- */
-        .canvas-area {
-            background-color: #FAF9F8;
-            background-image: radial-gradient(#E1DFDD 1px, transparent 1px);
-            background-size: 16px 16px;
+        .mockup-container {
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border: 2px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
             position: relative;
-            overflow-y: auto;
         }
 
-        .canvas-header-bar {
-            background: #FFFFFF;
-            height: 52px;
-            border-bottom: 1px solid var(--fluent-border);
+        .studio-topbar {
+            height: var(--topbar-height);
+            background-color: #ffffff;
+            border-bottom: 2px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            padding: 0 16px;
         }
 
-        .canvas-title {
-            font-size: 16px;
-            font-weight: 600;
+        .studio-brand {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 14px;
         }
 
-        .canvas-actions .fluent-btn {
-            background: var(--primary-accent);
-            color: white;
-            border: none;
-            padding: 6px 16px;
+        .studio-env-selector {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            border: 2px solid var(--text-main);
+            border-radius: 4px;
+            font-size: 12px;
+            background-color: #ffffff;
+            font-weight: 700;
+        }
+
+        .studio-layout {
+            display: flex;
+            flex: 1;
+            height: calc(100% - var(--topbar-height));
+            overflow: hidden;
+        }
+
+        .studio-sidebar {
+            width: var(--sidebar-width);
+            background-color: #f3f2f1;
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding-top: 12px;
+            justify-content: space-between;
+        }
+
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
             font-size: 13px;
+            color: var(--text-main);
             font-weight: 600;
-            border-radius: 2px;
+        }
+
+        .sidebar-menu-item.active {
+            background-color: #eaeaea;
+            color: var(--copilot-blue);
+            font-weight: 700;
+            border-left: 4px solid var(--copilot-blue);
+            padding-left: 12px;
+        }
+
+        .studio-content {
+            flex: 1;
+            background-color: #ffffff;
+            overflow-y: auto;
+            padding: 24px;
+            position: relative;
+        }
+
+        .studio-btn-primary {
+            background-color: var(--copilot-blue);
+            color: #ffffff;
+            border: none;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 4px;
             cursor: pointer;
+        }
+
+        .studio-btn-secondary {
+            background-color: #ffffff;
+            color: var(--text-main);
+            border: 2px solid var(--text-main);
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 4px;
+        }
+
+        .studio-card {
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            padding: 18px;
+            background: #ffffff;
         }
 
         .canvas-container {
-            padding: 40px;
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 24px;
+            padding: 20px;
+            overflow-y: auto;
+            width: 100%;
         }
 
-        /* NODOS COGNITIVOS REALES */
-        .fluent-node {
-            background: #FFFFFF;
-            border: 1px solid var(--fluent-border);
-            border-radius: var(--radius-fluent);
-            width: 320px;
-            box-shadow: var(--shadow-fluent);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .fluent-node.trigger {
-            border-top: 4px solid var(--node-trigger-border);
-        }
-
-        .fluent-node.message {
-            border-top: 4px solid var(--primary-accent);
-        }
-
-        .fluent-node.question {
-            border-top: 4px solid var(--warning-orange, #D83B01);
-        }
-
-        .node-header {
-            padding: 10px 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--fluent-secondary);
-            background: #FAFAFA;
-            border-bottom: 1px solid var(--fluent-border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .node-body {
-            padding: 14px;
-            font-size: 13px;
-            color: var(--fluent-text);
-            line-height: 1.4;
-        }
-
-        .node-connection-line {
-            width: 2px;
-            height: 24px;
-            background: #A19F9D;
+        .canvas-node {
+            background: #ffffff;
+            border: 2px solid #323130;
+            border-radius: 4px;
+            width: 260px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
             position: relative;
         }
 
-        .node-connection-line::after {
-            content: '';
+        .canvas-node::after {
+            content: "↓";
             position: absolute;
-            bottom: -4px;
-            left: -3px;
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-top: 5px solid #A19F9D;
+            bottom: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #323130;
+            font-weight: bold;
+            font-size: 16px;
         }
 
-        .add-node-circle {
-            width: 20px;
-            height: 20px;
-            background: #FFFFFF;
-            border: 1px solid #A19F9D;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: var(--primary-accent);
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: all 0.15s;
+        .canvas-node.last-node::after {
+            display: none;
         }
 
-        .add-node-circle:hover {
-            background: var(--primary-accent);
+        .node-header {
+            padding: 8px 10px;
+            font-size: 11px;
+            font-weight: 700;
             color: white;
-            border-color: var(--primary-accent);
+            border-radius: 2px 2px 0 0;
+            text-transform: uppercase;
         }
 
-        /* --- 3. RIGHT TEST PANEL (TEST BOT) --- */
-        .test-panel {
-            background-color: #FFFFFF;
-            border-left: 1px solid var(--fluent-border);
-            display: flex;
-            flex-direction: column;
-        }
+        .node-header.trigger { background-color: #5c2d91; }
+        .node-header.message { background-color: #005a9e; }
+        .node-header.question { background-color: #002050; }
 
-        .test-panel-header {
-            height: 52px;
-            border-bottom: 1px solid var(--fluent-border);
-            padding: 0 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .reset-chat-btn {
+        .node-body {
+            padding: 12px;
             font-size: 12px;
-            color: var(--primary-accent);
-            cursor: pointer;
-            background: none;
-            border: none;
+            color: #000000;
+            font-weight: 500;
+        }
+
+        .click-target {
+            outline: 3px dashed #d13438 !important; /* Rojo de alto contraste */
+            outline-offset: 4px;
+            background-color: rgba(209, 52, 56, 0.1) !important;
+        }
+
+        footer.navigation-footer {
+            height: 60px;
+            background-color: #ffffff;
+            border-top: 2px solid var(--border-color);
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 6px;
+            padding: 0 24px;
+            z-index: 100;
         }
 
-        .test-chat-body {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background-color: #FAF9F8;
+        .nav-btn {
+            background-color: #ffffff;
+            border: 2px solid var(--text-main);
+            color: var(--text-main);
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
-        .chat-bubble {
-            max-width: 85%;
-            padding: 10px 14px;
+        .nav-btn:hover:not(:disabled) {
+            background-color: var(--bg-light);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-btn.primary-action {
+            background-color: var(--copilot-blue);
+            color: white;
+            border: none;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 2px solid var(--border-color);
             border-radius: 4px;
             font-size: 13px;
-            line-height: 1.4;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            color: #000000;
         }
-
-        .chat-bubble.bot {
-            background: #FFFFFF;
-            border: 1px solid var(--fluent-border);
-            align-self: flex-start;
-        }
-
-        .chat-bubble.user {
-            background: #E1DFDD;
-            color: var(--fluent-text);
-            align-self: flex-end;
-        }
-
-        .source-tag {
-            display: block;
+        .badge-status {
+            background-color: #107c41;
+            color: #ffffff;
+            padding: 4px 8px;
             font-size: 11px;
-            color: var(--primary-accent);
-            margin-top: 6px;
-            font-weight: 600;
-        }
-
-        .test-chat-footer {
-            padding: 16px;
-            border-top: 1px solid var(--fluent-border);
-            background: #FFFFFF;
-        }
-
-        .chat-input-wrapper {
-            display: flex;
-            border: 1px solid #A19F9D;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .chat-input-wrapper:focus-within {
-            border-color: var(--m365-purple);
-        }
-
-        .chat-input-field {
-            flex: 1;
-            border: none;
-            padding: 8px 12px;
-            font-size: 13px;
-            outline: none;
-        }
-
-        .chat-send-btn {
-            background: none;
-            border: none;
-            padding: 0 12px;
-            color: var(--m365-purple);
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .chat-send-btn:hover {
-            color: var(--m365-purple-hover);
+            font-weight: 700;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 
-    <!-- BARRA SUPERIOR INSTITUCIONAL -->
-    <header class="m365-top-bar">
-        <div class="top-bar-left">
-            <i class="fa-solid fa-grip waffle-icon"></i>
-            <span>Microsoft Copilot Studio</span>
+    <header class="training-header">
+        <div class="training-title">
+            <h1>Simulador: Creación de Agente de RRHH (Vacaciones)</h1>
+            <p>Ruta Unificada de Aprendizaje Ágil</p>
         </div>
-        <div>
-            <i class="fa-regular fa-circle-question" style="margin-right:12px; cursor:pointer;"></i>
-            <i class="fa-regular fa-gear" style="cursor:pointer;"></i>
+        <div class="progress-container">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+            <div class="slide-counter" id="slideCounter">Paso 1 / 10</div>
         </div>
     </header>
 
-    <!-- DISEÑO DEL ESTUDIO -->
-    <div class="studio-layout">
-        
-        <!-- 1. NAVEGACIÓN IZQUIERDA -->
-        <nav class="studio-nav">
-            <div class="agent-profile-summary">
-                <div class="agent-avatar">VA</div>
-                <div class="agent-info">
-                    <h3>Agente de Vacaciones</h3>
-                    <p><i class="fa-solid fa-circle" style="color:var(--success-green); font-size:7px;"></i> Entorno Dev</p>
-                </div>
-            </div>
-            <a class="nav-item"><i class="fa-solid fa-house"></i> Inicio</a>
-            <a class="nav-item active"><i class="fa-solid fa-diagram-project"></i> Temas (Topics)</a>
-            <a class="nav-item"><i class="fa-solid fa-book"></i> Conocimiento</a>
-            <a class="nav-item"><i class="fa-solid fa-chart-line"></i> Analítica</a>
-            <a class="nav-item"><i class="fa-solid fa-cloud-arrow-up"></i> Publicar</a>
-        </nav>
+    <main class="workspace">
+        <section class="instruction-panel" id="instructionPanel"></section>
+        <section class="interface-simulator" id="simulatorPanel"></section>
+    </main>
 
-        <!-- 2. LIENZO CENTRAL (CANVAS DE EDICIÓN) -->
-        <section class="canvas-area">
-            <div class="canvas-header-bar">
-                <div class="canvas-title">
-                    <i class="fa-solid fa-diagram-project" style="color:var(--m365-purple);"></i>
-                    <span>Consulta de Saldos</span>
-                </div>
-                <div class="canvas-actions">
-                    <button class="fluent-btn"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
-                </div>
-            </div>
+    <footer class="navigation-footer">
+        <button class="nav-btn" id="btnPrev" onclick="changeSlide(-1)" disabled>← Anterior</button>
+        <button class="nav-btn primary-action" id="btnNext" onclick="changeSlide(1)">Siguiente →</button>
+    </footer>
 
-            <div class="canvas-container">
-                
-                <!-- NODO TRIGGER -->
-                <div class="fluent-node trigger">
-                    <div class="node-header">
-                        <span><i class="fa-solid fa-bolt" style="color:var(--node-trigger-border)"></i> Desencadenador</span>
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </div>
-                    <div class="node-body">
-                        <strong>Frases clave:</strong>
-                        <p style="color: var(--fluent-secondary); font-size:12px; margin-top:4px;">- Cuántos días de vacaciones tengo<br>- Saldo de días disponibles<br>- Consultar mis vacaciones</p>
-                    </div>
-                </div>
-
-                <div class="node-connection-line"></div>
-                <div class="add-node-circle"><i class="fa-solid fa-plus"></i></div>
-                <div class="node-connection-line"></div>
-
-                <!-- NODO ACCIÓN (LLAMADO A FLUJO O INFORMACIÓN) -->
-                <div class="fluent-node message">
-                    <div class="node-header">
-                        <span><i class="fa-regular fa-comment-dots" style="color:var(--primary-accent)"></i> Enviar un Mensaje</span>
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </div>
-                    <div class="node-body">
-                        <p>Entendido. Consultaré tus días disponibles en la base de datos central de Gestión Humana...</p>
-                    </div>
-                </div>
-
-                <div class="node-connection-line"></div>
-                <div class="add-node-circle"><i class="fa-solid fa-plus"></i></div>
-                <div class="node-connection-line"></div>
-
-                <!-- NODO PREGUNTA MOCK -->
-                <div class="fluent-node question">
-                    <div class="node-header">
-                        <span><i class="fa-regular fa-circle-question" style="color:#D83B01"></i> Formular una Pregunta</span>
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </div>
-                    <div class="node-body">
-                        <p style="margin-bottom:6px;">¿Deseas radicar una nueva solicitud formal ahora mismo?</p>
-                        <span style="font-size:11px; background:#FFF0F0; padding:2px 6px; border:1px solid #F8D7DA; border-radius:2px;">Opciones: Sí / No</span>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- 3. PANEL DE PRUEBAS COMPLETAMENTE INTERACTIVO (DERECHA) -->
-        <section class="test-panel">
-            <div class="test-panel-header">
-                <span><i class="fa-solid fa-vial" style="color:var(--success-green); margin-right:6px;"></i> Probar agente</span>
-                <button class="reset-chat-btn" id="clear-chat-btn"><i class="fa-solid fa-rotate-right"></i> Reiniciar</button>
-            </div>
-
-            <!-- CUERPO DEL CHAT -->
-            <div class="test-chat-body" id="chat-box">
-                <div class="chat-bubble bot">
-                    ¡Hola! Soy el Agente de Gestión Humana. Puedo ayudarte a verificar tu saldo de vacaciones, consultar políticas internas corporativas o iniciar una solicitud formal. ¿Qué deseas hacer?
-                </div>
-            </div>
-
-            <!-- ENTRADA DE CHAT DEL USUARIO -->
-            <div class="test-chat-footer">
-                <div class="chat-input-wrapper">
-                    <input type="text" class="chat-input-field" id="chat-input" placeholder="Escribe un mensaje al agente de prueba...">
-                    <button class="chat-send-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </section>
-
-    </div>
-
-    <!-- SCRIPT DE INTERACTIVIDAD PARA EL PANEL DE PRUEBAS -->
     <script>
-        const chatBox = document.getElementById('chat-box');
-        const chatInput = document.getElementById('chat-input');
-        const sendBtn = document.getElementById('send-btn');
-        const clearBtn = document.getElementById('clear-chat-btn');
+        const totalSteps = 10;
+        let currentStep = 1;
 
-        function appendMessage(text, isUser, source = null) {
-            const bubble = document.createElement('div');
-            bubble.className = `chat-bubble ${isUser ? 'user' : 'bot'}`;
-            bubble.innerHTML = text;
-
-            if (source) {
-                const srcTag = document.createElement('span');
-                srcTag.className = 'source-tag';
-                srcTag.innerHTML = `<i class="fa-solid fa-file-lines"></i> Fuente: ${source}`;
-                bubble.appendChild(srcTag);
+        const stepsData = {
+            1: {
+                title: "Entorno e Inicio de Creación",
+                goal: "Acceder a la consola y lanzar el asistente de aprovisionamiento de agentes.",
+                location: "Esquina superior derecha del panel / Barra lateral",
+                desc: "Asegúrese de estar en el entorno de desarrollo correcto y haga clic en el botón principal '+ Create an agent'.",
+                visual: "Panel de control limpio con una lista vacía de agentes y el botón principal de creación resaltado en azul.",
+                tip: "Verifique siempre el entorno en la barra superior antes de crear recursos para evitar mezclarlos con producción.",
+                success: "Aparece la pantalla de configuración inicial del nuevo agente.",
+                mockup: `
+                    <div class="studio-topbar">
+                        <div class="studio-brand">Microsoft Copilot Studio</div>
+                        <div class="studio-env-selector">CRC_Desarrollo</div>
+                    </div>
+                    <div class="studio-layout">
+                        <div class="studio-sidebar">
+                            <div><div class="sidebar-menu-item active">🤖 Agentes</div></div>
+                        </div>
+                        <div class="studio-content" style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <h2>Mis Agentes</h2>
+                            <button class="studio-btn-primary click-target">+ Create an agent</button>
+                        </div>
+                    </div>`
+            },
+            2: {
+                title: "Configuración de Identidad e Idioma",
+                goal: "Definir los metadatos principales y el idioma de procesamiento del agente.",
+                location: "Formulario central de creación del agente",
+                desc: "Asigne el nombre 'Asistente RRHH - Vacaciones', agregue su descripción operativa y fije obligatoriamente el idioma en 'Español'.",
+                visual: "Tres campos de texto rellenados con datos legibles de alto contraste dentro del cuadro de diálogo.",
+                tip: "El idioma principal no se puede cambiar después de creado el bot; asegúrese de fijar 'Español' en este paso.",
+                success: "El botón inferior 'Create' se activa para confirmar los datos de identidad.",
+                mockup: `
+                    <div class="studio-topbar"><div class="studio-brand">Microsoft Copilot Studio</div></div>
+                    <div class="studio-layout">
+                        <div class="studio-content" style="display: flex; justify-content: center; align-items: center; background: #f3f2f1;">
+                            <div class="studio-card click-target" style="width: 420px;">
+                                <h3 style="margin-bottom: 15px;">Agent Settings</h3>
+                                <div class="form-group"><label>Name</label><input type="text" value="Asistente RRHH - Vacaciones" readonly></div>
+                                <div class="form-group"><label>Description</label><textarea rows="2" readonly>Gestiona consultas de políticas y solicitudes de descansos.</textarea></div>
+                                <div class="form-group"><label>Primary Language</label><select><option>Español (Spanish)</option></select></div>
+                                <button class="studio-btn-primary" style="width:100%; margin-top:10px;">Create</button>
+                            </div>
+                        </div>
+                    </div>`
+            },
+            3: {
+                title: "Carga y Validación de Base de Conocimiento",
+                goal: "Alimentar al bot con el documento PDF de políticas corporativas.",
+                location: "Pestaña lateral 'Knowledge' -> Botón '+ Add knowledge'",
+                desc: "Vaya al módulo Knowledge, suba el archivo 'Politica_Vacaciones_CRC.pdf' y espere a que el estado cambie a 'Completed'.",
+                visual: "Una tabla con el archivo listado y una etiqueta verde de éxito que garantiza que la IA ya indexó el texto.",
+                tip: "La indexación puede tardar unos momentos. No guarde ni salga de la pantalla hasta ver el estado completado.",
+                success: "El documento muestra un indicador de estado exitoso en color verde sólido.",
+                mockup: `
+                    <div class="studio-topbar"><div class="studio-brand">Asistente RRHH - Vacaciones</div></div>
+                    <div class="studio-layout">
+                        <div class="studio-sidebar">
+                            <div><div class="sidebar-menu-item active">📚 Knowledge</div></div>
+                        </div>
+                        <div class="studio-content">
+                            <h3>Knowledge sources</h3>
+                            <div class="studio-card click-target" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                                <div><strong>Politica_Vacaciones_CRC.pdf</strong></div>
+                                <span class="badge-status">Completed</span>
+                            </div>
+                        </div>
+                    </div>`
+            },
+            4: {
+                title: "Creación del Flujo 'Consultar Vacaciones'",
+                goal: "Diseñar la intención de consulta enlazada a respuestas generativas de IA.",
+                location: "Módulo 'Topics' -> Create from blank",
+                desc: "Cree un nuevo tema vacío, añada las frases disparadoras de consulta y agregue un nodo de tipo 'Create Generative Answers'.",
+                visual: "El lienzo interactivo mostrando el nodo raíz morado conectado directamente al nodo azul de respuestas de IA.",
+                tip: "Este nodo le permite al bot responder cualquier duda usando el PDF sin necesidad de programar diálogos rígidos.",
+                success: "Ambos nodos aparecen correctamente vinculados en el canvas de diseño.",
+                mockup: `
+                    <div class="studio-topbar">
+                        <div class="studio-brand">Asistente RRHH - Vacaciones</div>
+                        <button class="studio-btn-primary">Save</button>
+                    </div>
+                    <div class="studio-layout">
+                        <div class="studio-content" style="padding:0;">
+                            <div class="canvas-container click-target">
+                                <div class="canvas-node"><div class="node-header trigger">On Intent: Consultar</div><div class="node-body">¿Cuántos días tengo?</div></div>
+                                <div class="canvas-node last-node"><div class="node-header message" style="background:#004b87;">Generative Answers</div><div class="node-body">Using: Knowledge Base</div></div>
+                            </div>
+                        </div>
+                    </div>`
+            },
+            5: {
+                title: "Flujo Estructurado 'Solicitar Vacaciones'",
+                goal: "Modelar la captura de datos fija para la radicación formal del descanso.",
+                location: "Nuevo Topic personalizado de captura",
+                desc: "Cree un tema con el disparador 'Solicitar vacaciones'. Añada un bloque 'Ask a question' para guardar la fecha en la variable 'User.FechaInicio'.",
+                visual: "Un bloque de pregunta técnico que resalta la variable donde se almacenará de forma segura la respuesta del usuario.",
+                tip: "Use nombres descriptivos para sus variables. En lugar de dejar 'Var1', cámbielo a 'FechaInicio' para mantener el orden.",
+                success: "Se visualiza el bloque de captura configurado con formato de entidad tipo Fecha.",
+                mockup: `
+                    <div class="studio-topbar"><div class="studio-brand">Asistente RRHH - Vacaciones</div></div>
+                    <div class="studio-layout">
+                        <div class="studio-content" style="padding:0;">
+                            <div class="canvas-container click-target">
+                                <div class="canvas-node"><div class="node-header trigger">On Intent: Solicitar</div><div class="node-body">Quiero pedir vacaciones</div></div>
+                                <div class="canvas-node last-node">
+                                    <div class="node-header question">Ask a question</div>
+                                    <div class="node-body">
+                                        <p>¿Qué día inicias?</p>
+                                        <div style="margin-top:6px; background:var(--copilot-light-blue); padding:4px; font-weight:bold; border:1px solid var(--copilot-blue);">Save: User.FechaInicio</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`
+            },
+            6: {
+                title: "Mensaje de Cierre y Guardado",
+                goal: "Confirmar los datos capturados al usuario y asegurar los cambios del tema.",
+                location: "Nodo final del Canvas -> Botón superior 'Save'",
+                desc: "Conecte un nodo 'Send a message' que use la variable guardada y haga clic en el botón 'Save' de la esquina superior derecha.",
+                visual: "Mensaje final estructurado que concatena la variable dinámica y el botón superior de guardado iluminado.",
+                tip: "Siempre guarde los temas de forma individual antes de proceder a realizar pruebas o publicar en canales.",
+                success: "Banner de éxito en la zona superior indicando que el Topic está asegurado.",
+                mockup: `
+                    <div class="studio-topbar">
+                        <div class="studio-brand">Asistente RRHH - Vacaciones</div>
+                        <button class="studio-btn-primary click-target">Save (Saved)</button>
+                    </div>
+                    <div class="studio-layout">
+                        <div class="studio-content" style="padding:0;">
+                            <div class="canvas-container">
+                                <div class="canvas-node"><div class="node-header question">Ask a question</div><div class="node-body">¿Qué día inicias?</div></div>
+                                <div class="canvas-node last-node"><div class="node-header message">Send a message</div><div class="node-body">Registrado para el {User.FechaInicio}</div></div>
+                            </div>
+                        </div>
+                    </div>`
+            },
+            7: {
+                title: "Personalización de Respuestas del Sistema",
+                goal: "Ajustar el saludo inicial y las respuestas de contingencia automáticas.",
+                location: "Topics -> Pestaña secundaria 'System'",
+                desc: "Abra el tema 'Greeting' para personalizar la bienvenida del bot, y configure 'Conversational fallback' para guiar al usuario si la IA no entiende.",
+                visual: "Lista de temas por defecto del sistema donde se modifican las frases predefinidas de fábrica.",
+                tip: "Un buen mensaje de contingencia reduce la frustración del empleado indicándole claramente cómo reformular su duda.",
+                success: "Los temas de control nativos reflejan los textos personalizados en español.",
+                mockup: `
+                    <div class="studio-topbar"><div class="studio-brand">Asistente RRHH - Vacaciones</div></div>
+                    <div class="studio-layout">
+                        <div class="studio-content">
+                            <div style="border-bottom:2px solid var(--border-color); padding-bottom:6px; margin-bottom:15px; display:flex; gap:20px;">
+                                <span style="color:var(--text-secondary);">Custom</span>
+                                <span style="font-weight:bold; color:var(--copilot-blue); border-bottom:3px solid var(--copilot-blue);">System Topics</span>
+                            </div>
+                            <div class="studio-card click-target" style="margin-bottom:6px;">👋 Greeting (Modificado)</div>
+                            <div class="studio-card click-target">⚠️ Conversational Fallback (Modificado)</div>
+                        </div>
+                    </div>`
+            },
+            8: {
+                title: "Prueba General de Extracción de Datos",
+                goal: "Validar que la IA responde con precisión utilizando el panel de testeo.",
+                location: "Panel derecho 'Test agent'",
+                desc: "Abra el chat de pruebas, escriba '¿Cuántos días de vacaciones me corresponden?' y verifique la respuesta y sus fuentes.",
+                visual: "Chat interactivo con la respuesta generada por la IA acompañada de un número de cita o referencia al archivo PDF.",
+                tip: "Haga clic en los números de cita de la respuesta para auditar el fragmento exacto del PDF que usó la IA.",
+                success: "El bot responde con datos idénticos a las políticas reales sin inventar información.",
+                mockup: `
+                    <div class="studio-topbar"><div class="studio-brand">Asistente RRHH - Vacaciones</div></div>
+                    <div class="studio-layout">
+                        <div class="studio-content"></div>
+                        <div class="studio-panel-right click-target" style="width:320px;">
+                            <div class="studio-panel-header">Test Agent</div>
+                            <div class="studio-panel-body" style="background:#f3f2f1; display:flex; flex-direction:column; justify-content:flex-end;">
+                                <div style="background:var(--copilot-light-blue); padding:8px; border-radius:4px; margin-bottom:10px; align-self:flex-end; font-size:12px;">¿Cuántos días me corresponden?</div>
+                                <div style="background:white; padding:8px; border-radius:4px; margin-bottom:10px; font-size:12px; border:1px solid var(--border-color);">Corresponden 15 días hábiles según la política. <span style="color:blue; font-weight:bold;">[1]</span></div>
+                            </div>
+                        </div>
+                    </div>`
+            },
+            9: {
+                title: "Compilación y Publicación del Agente",
+                goal: "Empaquetar la versión estable del bot para su despliegue masivo.",
+                location: "Pestaña de control lateral 'Publish'",
+                desc: "Vaya al panel de publicación y haga clic en el botón '+ Publish'. Confirme la acción y espere el mensaje de éxito.",
+                visual: "Pantalla con un banner de confirmación verde y la marca de tiempo actualizada con la versión de producción.",
+                tip: "Cualquier cambio que haga en los temas en el futuro requerirá que regrese aquí y presione publicar para que se refleje en los usuarios.",
+                success: "Aparece el mensaje oficial 'Your agent is published' en pantalla.",
+                mockup: `
+                    <div class="studio-topbar"><div class="studio-brand">Asistente RRHH - Vacaciones</div></div>
+                    <div class="studio-layout">
+                        <div class="studio-sidebar"><div><div class="sidebar-menu-item active">🚀 Publish</div></div></div>
+                        <div class="studio-content">
+                            <div class="studio-card click-target" style="border-left: 4px solid #107c41; background:#f4fbf5;">
+                                <strong>✓ ¡Publicación exitosa!</strong>
+                                <p style="font-size:12px; margin-top:4px; color:var(--text-secondary);">Versión de producción sincronizada.</p>
+                            </div>
+                        </div>
+                    </div>`
+            },
+            10: {
+                title: "Conexión y Despliegue en Microsoft Teams",
+                goal: "Habilitar el canal institucional para que el bot esté disponible en los chats de la empresa.",
+                location: "Módulo 'Channels' -> Tarjeta 'Microsoft Teams'",
+                desc: "Abra la sección de canales, elija 'Microsoft Teams' y haga clic en 'Turn on Teams'. Al finalizar, guarde y copie el enlace directo de acceso.",
+                visual: "Resumen final del agente en la pestaña Overview con luz verde, mostrando estado Live y el canal de Teams activo.",
+                tip: "¡Felicitaciones! Ha creado, entrenado con documentos, validado y desplegado un agente inteligente completo sin usar código.",
+                success: "Todos los indicadores lógicos de la consola confirman que el bot de vacaciones está 100% operativo en producción.",
+                mockup: `
+                    <div class="studio-topbar">
+                        <div class="studio-brand">Asistente RRHH - Vacaciones</div>
+                        <div class="badge-status">Live & Published</div>
+                    </div>
+                    <div class="studio-layout">
+                        <div class="studio-sidebar"><div><div class="sidebar-menu-item active">📋 Overview</div></div></div>
+                        <div class="studio-content" style="text-align:center; padding-top:10px;">
+                            <div style="font-size:28px; margin-bottom:5px;">🎉</div>
+                            <h3 style="color:#107c41;">¡Proyecto Completado Exitosamente!</h3>
+                            <p style="font-size:13px; color:var(--text-secondary); margin:5px auto 15px auto; max-width:420px;">El agente está integrado con el PDF de políticas y listo para atender a los colaboradores directamente en Microsoft Teams.</p>
+                            <div style="display:flex; justify-content:center; gap:10px;" class="click-target">
+                                <div class="studio-card" style="padding:8px 12px; font-size:12px;"><strong>2 Temas Activos</strong></div>
+                                <div class="studio-card" style="padding:8px 12px; font-size:12px;"><strong>1 PDF Indexado</strong></div>
+                                <div class="studio-card" style="padding:8px 12px; font-size:12px;"><strong>Teams Conectado</strong></div>
+                            </div>
+                        </div>
+                    </div>`
             }
+        };
 
-            chatBox.appendChild(bubble);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        function renderSlide(stepIndex) {
+            const data = stepsData[stepIndex];
+            
+            const instructionHTML = `
+                <div class="instruction-content">
+                    <span class="step-badge">Paso ${stepIndex} de ${totalSteps}</span>
+                    <h2 class="action-title">${data.title}</h2>
+                    
+                    <div class="section-block">
+                        <div class="block-label">🎯 Objetivo del Paso</div>
+                        <div class="block-text">${data.goal}</div>
+                    </div>
+                    
+                    <div class="section-block">
+                        <div class="block-label">📍 Ubicación en Pantalla</div>
+                        <div class="block-text ui-location">${data.location}</div>
+                    </div>
+                    
+                    <div class="section-block">
+                        <div class="block-label">🖱️ ¿Qué debe hacer?</div>
+                        <div class="block-text"><strong>${data.desc}</strong></div>
+                    </div>
+                    
+                    <div class="section-block">
+                        <div class="block-label">👁️ Descripción Visual</div>
+                        <div class="block-text">${data.visual}</div>
+                    </div>
+                    
+                    <div class="section-block">
+                        <div class="block-label">💡 Consejo de Control</div>
+                        <div class="block-text tip-box">${data.tip}</div>
+                    </div>
+                    
+                    <div class="section-block">
+                        <div class="block-label">✅ Indicador de Éxito</div>
+                        <div class="block-text success-box">${data.success}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('instructionPanel').innerHTML = instructionHTML;
+            document.getElementById('simulatorPanel').innerHTML = `<div class="mockup-container">${data.mockup}</div>`;
+
+            document.getElementById('slideCounter').innerText = `Paso ${stepIndex} / ${totalSteps}`;
+            document.getElementById('progressBar').style.width = `${(stepIndex / totalSteps) * 100}%`;
+
+            document.getElementById('btnPrev').disabled = (stepIndex === 1);
+            
+            const nextBtn = document.getElementById('btnNext');
+            if (stepIndex === totalSteps) {
+                nextBtn.innerText = "¡Finalizado!";
+                nextBtn.style.backgroundColor = '#107c41';
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.innerText = "Siguiente →";
+                nextBtn.style.backgroundColor = '';
+                nextBtn.disabled = false;
+            }
         }
 
-        function handleSend() {
-            const query = chatInput.value.trim();
-            if (!query) return;
-
-            // 1. Añadir mensaje de usuario
-            appendMessage(query, true);
-            chatInput.value = '';
-
-            // 2. Simular IA de Copilot Studio mapeando intenciones en tiempo real
-            setTimeout(() => {
-                const lowerQuery = query.toLowerCase();
-                
-                if (lowerQuery.includes('vacaciones') || lowerQuery.includes('saldo') || lowerQuery.includes('días')) {
-                    appendMessage("Revisando los registros en Dataverse... Actualmente posees <strong>15 días hábiles</strong> de vacaciones acumuladas y listas para disfrutar.", false, "Base_Saldos_Dataverse");
-                } else if (lowerQuery.includes('politica') || lowerQuery.includes('manual') || lowerQuery.includes('reglamento')) {
-                    appendMessage("Según el artículo 22 del Reglamento Interno de Trabajo, las vacaciones deben solicitarse con un mínimo de 15 días calendario de anticipación.", false, "Reglamento_Interno_v4.pdf");
-                } else {
-                    appendMessage("Entendido tu mensaje. Para procesar esa solicitud de manera precisa, requeriré activar un flujo de automatización con Power Automate. ¿Deseas proceder?", false);
-                }
-            }, 1000);
+        function changeSlide(direction) {
+            const targetStep = currentStep + direction;
+            if (targetStep >= 1 && targetStep <= totalSteps) {
+                currentStep = targetStep;
+                renderSlide(currentStep);
+            }
         }
 
-        sendBtn.addEventListener('click', handleSend);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSend();
-        });
-
-        clearBtn.addEventListener('click', () => {
-            chatBox.innerHTML = `
-                <div class="chat-bubble bot">
-                    Conversación restablecida. ¿En qué te puedo colaborar en este momento dentro del entorno de pruebas?
-                </div>`;
-        });
+        window.onload = function() {
+            renderSlide(1);
+        };
     </script>
 </body>
 </html>
